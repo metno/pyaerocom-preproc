@@ -12,6 +12,7 @@
     "cSpell.words": [
         "Aerocom",
         "boto",
-        "dynaconf"
+        "dynaconf",
+        "tomli"
     ]
 }

@@ -11,12 +11,13 @@ from dynaconf import Dynaconf, Validator
 
 __all__ = ["settings", "SECRETS_PATH"]
 
-SECRETS_PATH = Path("~/.config/pya_pp.toml").expanduser()
+SECRETS_PATH = Path("~/.config/pya-pp/config.toml").expanduser()
+
 
 with resources.as_file(resources.files(__package__) / "settings.toml") as settings:
     settings = Dynaconf(
         envvar_prefix="PYA_PP",
-        settings_files=[settings, SECRETS_PATH],
+        settings_files=[SECRETS_PATH, settings],
         validators=[
             Validator(
                 "s3_bucket.endpoint_url",

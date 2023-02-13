@@ -1,2 +1,3 @@
 [s3_bucket]
 endpoint_url = "https://rgw.met.no"
+dynaconf_merge = true
