@@ -10,6 +10,7 @@
     "python.linting.mypyEnabled": true,
     "cSpell.ignoreWords": [],
     "cSpell.words": [
-        "Aerocom"
+        "Aerocom",
+        "boto"
     ]
 }

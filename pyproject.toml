@@ -11,6 +11,7 @@ packages = [{ include = "pyaerocom_preproc", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+boto3 = "^1.26.69"
 
 [build-system]
 requires = ["poetry-core"]
