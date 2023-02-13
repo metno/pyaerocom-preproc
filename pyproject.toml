@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "pyaerocom-preproc"
+version = "0.1.0"
+description = "Check and upload observations and model data for PyAerocom usage"
+authors = [
+    "Alvaro Valdebenito <alvarov@met.no>",
+    "Charlie Negri <charlien@met.no>",
+]
+readme = "README.md"
+packages = [{ include = "pyaerocom_preproc", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+target-version = ['py38']
+extend_skip = []
+line-length = 99
+
+[tool.isort]
+py_version = "38"
+profile = "black"
+src_paths = ["pyaerocom_preproc", "tests"]
+extend_skip = []
+line_length = 99
+
+[tool.mypy]
+python_version = "3.8"
+warn_unused_configs = true
+warn_unused_ignores = false
+warn_no_return = true
+warn_return_any = false
+warn_unreachable = true
+show_error_codes = true
+pretty = true
+sqlite_cache = true
+# exclude = ""
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
