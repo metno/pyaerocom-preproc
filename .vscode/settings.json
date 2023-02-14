@@ -8,11 +8,17 @@
     "python.linting.lintOnSave": true,
     "python.linting.pylintEnabled": false,
     "python.linting.mypyEnabled": true,
-    "cSpell.ignoreWords": [],
+    "cSpell.ignoreWords": [
+        "addoption",
+        "fixturenames",
+        "preproc",
+        "pyaerocom"
+    ],
     "cSpell.words": [
         "Aerocom",
         "boto",
         "dynaconf",
+        "Metafunc",
         "tomli"
     ]
 }

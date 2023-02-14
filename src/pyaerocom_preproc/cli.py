@@ -3,8 +3,9 @@ from __future__ import annotations
 import sys
 from getpass import getpass
 from importlib import metadata
+from pathlib import Path
 from textwrap import dedent
-from typing import Optional
+from typing import List, Optional
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     import tomllib
@@ -65,5 +66,13 @@ def config(overwrite: bool = typer.Option(False, "--overwrite", "-O")):
         SECRETS_PATH.chmod(0o600)  # only user has read/write permissions
 
     cmd = "-vv --tb=no tests/test_s3_bucket.py::test_credentials".split()
+    if exit_code := pytest.main(cmd) != 0:
+        sys.exit(exit_code)
+
+
+@main.command()
+def check_files(files: List[Path]):
+    cmd = f"-vv --tb=no tests/test_files.py --pya-pp-files".split()
+    cmd.extend(path.resolve() for path in files)  # type:ignore
     if exit_code := pytest.main(cmd) != 0:
         sys.exit(exit_code)
