@@ -17,6 +17,12 @@ typer = "^0.7.0"
 tomli-w = "^1.0.0"
 tomli = { version = "^2.0.1", python = "<3.11" }
 importlib-resources = { version = "^5.10.2", python = "<3.11" }
+numpy = "^1.24.2"
+xarray = [
+    { version = "<2023.2", python = "~3.8" },
+    { version = ">=2023.2", python = "^3.9" },
+]
+netCDF4 = "^1.6.2"
 pytest = "^7.2.1"
 pytest-sugar = "^0.9.6"
 
@@ -25,6 +31,10 @@ pya-pp = "pyaerocom_preproc.cli:main"
 
 [tool.poetry.plugins."pytest11"]
 pya-pp = "pyaerocom_preproc.pytest_plugin"
+
+
+[tool.poetry.group.dev.dependencies]
+bpython = "^0.24"
 
 [build-system]
 requires = ["poetry-core"]
@@ -58,5 +68,5 @@ sqlite_cache = true
 # exclude = ""
 
 [[tool.mypy.overrides]]
-module = []
+module = ["xarray"]
 ignore_missing_imports = true

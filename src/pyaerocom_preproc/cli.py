@@ -38,7 +38,10 @@ def version_callback(value: bool) -> None:  # pragma: no cover
     message = f"""
         {package(__package__)}
         dependencies (installed version)
-        
+
+        data formats and manipulation
+        {package("xarray", "netCDF4", "numpy")}
+                
         configuration
         {package("dynaconf", "tomli" if sys.version_info < (3, 11) else None, "tomli-w")}
 
