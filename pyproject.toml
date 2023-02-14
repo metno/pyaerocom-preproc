@@ -23,6 +23,9 @@ pytest-sugar = "^0.9.6"
 [tool.poetry.scripts]
 pya-pp = "pyaerocom_preproc.cli:main"
 
+[tool.poetry.plugins."pytest11"]
+pya-pp = "pyaerocom_preproc.pytest_plugin"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

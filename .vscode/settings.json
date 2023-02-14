@@ -10,9 +10,11 @@
     "python.linting.mypyEnabled": true,
     "cSpell.ignoreWords": [
         "addoption",
+        "callobj",
         "fixturenames",
         "preproc",
-        "pyaerocom"
+        "pyaerocom",
+        "reportinfo"
     ],
     "cSpell.words": [
         "Aerocom",
