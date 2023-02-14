@@ -17,6 +17,8 @@ typer = "^0.7.0"
 tomli-w = "^1.0.0"
 tomli = { version = "^2.0.1", python = "<3.11" }
 importlib-resources = { version = "^5.10.2", python = "<3.11" }
+pytest = "^7.2.1"
+pytest-sugar = "^0.9.6"
 
 [tool.poetry.scripts]
 pya-pp = "pyaerocom_preproc.cli:main"
@@ -24,6 +26,9 @@ pya-pp = "pyaerocom_preproc.cli:main"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
 
 [tool.black]
 target-version = ['py38']

@@ -11,11 +11,11 @@ if sys.version_info >= (3, 11):  # pragma: no cover
 else:  # pragma: no cover
     import tomli as tomllib
 
+import pytest
 import tomli_w
 import typer
-from dynaconf import ValidationError
 
-from .config import SECRETS_PATH, settings
+from .config import SECRETS_PATH
 
 main = typer.Typer(add_completion=False)
 
@@ -64,8 +64,6 @@ def config(overwrite: bool = typer.Option(False, "--overwrite", "-O")):
         SECRETS_PATH.write_text(tomli_w.dumps({"s3_bucket": secrets}))
         SECRETS_PATH.chmod(0o600)  # only user has read/write permissions
 
-    try:
-        settings.validators.validate("s3_bucket")
-    except ValidationError as e:
-        print(str(e))
-        raise typer.Abort()
+    cmd = "-vv --tb=no tests/test_s3_bucket.py::test_credentials".split()
+    if exit_code := pytest.main(cmd) != 0:
+        sys.exit(exit_code)
