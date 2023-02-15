@@ -16,9 +16,10 @@ else:  # pragma: no cover
 import pytest
 import tomli_w
 import typer
+from dynaconf import ValidationError
 from loguru import logger
 
-from .config import SECRETS_PATH
+from .config import SECRETS_PATH, settings
 
 main = typer.Typer(add_completion=False)
 
@@ -90,7 +91,6 @@ def callback(
 @main.command()
 def config(
     overwrite: bool = typer.Option(False, "--overwrite", "-O"),
-    quiet: bool = typer.Option(False, "--quiet", "-q"),
 ):
     """Check credentials file"""
     if not SECRETS_PATH.exists() or overwrite:
@@ -99,9 +99,12 @@ def config(
         SECRETS_PATH.write_text(tomli_w.dumps({"s3_bucket": secrets}))
         SECRETS_PATH.chmod(0o600)  # only user has read/write permissions
 
-    cmd = f"{'' if quiet else '-vv'} --tb=no tests/test_s3_bucket.py::test_credentials".split()
-    if exit_code := pytest.main(cmd) != 0:
-        sys.exit(exit_code)
+    try:
+        settings.validators.validate("s3_bucket")
+    except ValidationError as e:
+        with logger.contextualize(path=SECRETS_PATH):
+            logger.error(e)
+        raise typer.Abort()
 
 
 @main.command()
