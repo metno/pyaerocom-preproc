@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import re
 import sys
 from getpass import getpass
 from importlib import metadata
 from pathlib import Path
-from shlex import split
 from textwrap import dedent
-from typing import List, Optional
+from typing import Optional
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     import tomllib
@@ -16,14 +14,14 @@ else:  # pragma: no cover
 
 import tomli_w
 import typer
-import xarray as xr
 from dynaconf import ValidationError
 from loguru import logger
 
-from .check_obs import time_checker
+from .check_obs import obs_checker
 from .config import SECRETS_PATH, settings
 
 main = typer.Typer(add_completion=False)
+main.command(name="check-obs")(obs_checker)
 
 
 def version_callback(value: bool) -> None:  # pragma: no cover
@@ -107,21 +105,3 @@ def config(
         with logger.contextualize(path=SECRETS_PATH):
             logger.error(e)
         raise typer.Abort()
-
-
-@main.command()
-def check_obs(
-    data_set: str,
-    files: List[Path],
-    quiet: bool = typer.Option(False, "--quiet", "-q"),
-):
-    """Check requirements for observations datasets"""
-    regex = re.compile(rf"{data_set}.*.nc")
-    for path in files:
-        with logger.contextualize(path=path):
-            if not regex.match(path.name):
-                logger.error(f"does not match '{data_set}-station_name-year.nc'")
-                continue
-
-            ds = xr.open_dataset(path)
-            time_checker(ds)

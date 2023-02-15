@@ -1,12 +1,38 @@
 from __future__ import annotations
 
-from typing import Literal
+import re
+from pathlib import Path
+from typing import Callable, List, Literal
 
 import numpy as np
 import xarray as xr
 from loguru import logger
 
+__all__ = ["obs_checker"]
 
+REGISTERED_CHECKERS: list[Callable[[xr.Dataset], None]] = []
+
+
+def register(func):
+    REGISTERED_CHECKERS.append(func)
+    return func
+
+
+def obs_checker(data_set: str, files: List[Path]) -> None:
+    """Check requirements for observations datasets"""
+    regex = re.compile(rf"{data_set}.*.nc")
+    for path in files:
+        with logger.contextualize(path=path):
+            if not regex.match(path.name):
+                logger.error(f"filename does not match r'{regex.pattern}'")
+                continue
+
+            ds = xr.open_dataset(path)
+            for checker in REGISTERED_CHECKERS:
+                checker(ds)
+
+
+@register
 def time_checker(ds: xr.Dataset) -> None:
     if (time := ds.get("time")) is None:
         logger.error("missing 'time' field")
