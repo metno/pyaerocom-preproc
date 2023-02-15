@@ -23,6 +23,7 @@ xarray = [
     { version = ">=2023.2", python = "^3.9" },
 ]
 netCDF4 = "^1.6.2"
+loguru = "^0.6.0"
 pytest = "^7.2.1"
 pytest-sugar = "^0.9.6"
 

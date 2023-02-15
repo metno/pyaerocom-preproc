@@ -16,6 +16,7 @@ else:  # pragma: no cover
 import pytest
 import tomli_w
 import typer
+from loguru import logger
 
 from .config import SECRETS_PATH
 
@@ -53,11 +54,37 @@ def version_callback(value: bool) -> None:  # pragma: no cover
     raise typer.Exit()
 
 
+def logging_config(verbose: int = 0, *, quiet: bool = False, debug: bool = False):
+    if not debug:
+        handler = dict(
+            sink=sys.stdout,
+            level="DEBUG",
+            format="<cyan>{function}</cyan> - <level>{message}</level>",
+        )
+        if quiet:
+            handler.update(level="WARN")
+        elif verbose == 0:
+            handler.update(level="INFO")
+        elif verbose == 1:
+            handler.update(level="DEBUG")
+        else:
+            handler.update(format="{time:%F %T} <level>{message}</level>")
+        logger.configure(handlers=[handler])
+
+    logger.debug(f"{__package__} version {metadata.version(__package__)}")
+
+
 @main.callback()
 def callback(
     version: Optional[bool] = typer.Option(None, "--version", "-V", callback=version_callback),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="only show warning and error messages"
+    ),
+    verbose: int = typer.Option(0, "--verbose", "-v", count=True, help="show debug messages"),
+    debug: bool = typer.Option(False, "--debug", "-d", help="show messages with line numbers"),
 ):
     """Check and upload observations and model data for PyAerocom usage"""
+    logging_config(verbose, quiet=quiet, debug=debug)
 
 
 @main.command()
