@@ -86,3 +86,31 @@ def infer_freq(time_delta: xr.DataArray) -> Literal["1H", "1D", "?"]:
 
 def years(time: xr.DataArray) -> set[int]:
     return set(np.unique(time.dt.year))
+
+
+@register
+def coord_checker(ds: xr.Dataset) -> None:
+    if (latitude := ds.get("latitude")) is None:
+        logger.error("missing 'latitude' field")
+    if (longitude := ds.get("longitude")) is None:
+        logger.error("missing 'longitude' field")
+    if (altitude := ds.get("altitude")) is None:
+        logger.error("missing 'altitude' field")
+
+    if latitude is None or longitude is None or altitude is None:
+        return
+
+    coord_units = ((latitude, "degree_north"), (longitude, "degree_east"), (altitude, "m"))
+    for coord, _units in coord_units:
+        if (size := coord.size) != 1:
+            logger.error(f"{coord.name}.{size=} != 1")
+        if (units := coord.attrs.get("units")) is None:
+            logger.error(f"missing {coord.name}.units")
+            continue
+        if units != _units:
+            logger.error(f"{coord.name}.{units=} != '{_units}'")
+
+    if (latitude < -180).any() or (latitude > 180).any():
+        logger.error(f"out of latitude range [-180, 180]")
+    if (longitude < -90).any() or (longitude > 90).any():
+        logger.error(f"out of longitude range [-90, 90]")
