@@ -10,6 +10,17 @@ from loguru import logger
 
 __all__ = ["obs_checker"]
 
+VARIABLE_UNITS = dict(
+    air_quality_index="1",
+    CO_density="mg/m3",
+    NO2_density="ug/m3",
+    O3_density="ug/m3",
+    PM10_density="ug/m3",
+    PM2p5_density="ug/m3",
+    SO2_density="ug/m3",
+)
+
+
 REGISTERED_CHECKERS: list[Callable[[xr.Dataset], None]] = []
 
 
@@ -114,3 +125,30 @@ def coord_checker(ds: xr.Dataset) -> None:
         logger.error(f"out of latitude range [-180, 180]")
     if (longitude < -90).any() or (longitude > 90).any():
         logger.error(f"out of longitude range [-90, 90]")
+
+
+@register
+def data_checker(ds: xr.Dataset) -> None:
+    if (time := ds.get("time")) is None:
+        logger.error("missing 'time' field")
+        return
+
+    if not set(VARIABLE_UNITS).intersection(ds.data_vars):
+        logger.error("missing obs found")
+        return
+
+    for var, _units in VARIABLE_UNITS.items():
+        if var not in ds.data_vars:
+            continue
+
+        if (size := ds[var].size) != time.size:
+            logger.error(f"{var}.{size=} != {time.size}")
+        if (units := ds[var].attrs.get("units")) is None:
+            logger.error(f"missing {var}.units")
+            continue
+        if units != _units:
+            logger.error(f"{var}.{units=} != '{_units}'")
+
+    for var in VARIABLE_UNITS:
+        if (ds[var] < 0).any():
+            logger.error(f"{var} has negative values")
