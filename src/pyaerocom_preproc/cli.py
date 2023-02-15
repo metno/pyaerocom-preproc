@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import sys
 from getpass import getpass
 from importlib import metadata
@@ -13,12 +14,13 @@ if sys.version_info >= (3, 11):  # pragma: no cover
 else:  # pragma: no cover
     import tomli as tomllib
 
-import pytest
 import tomli_w
 import typer
+import xarray as xr
 from dynaconf import ValidationError
 from loguru import logger
 
+from .check_obs import time_checker
 from .config import SECRETS_PATH, settings
 
 main = typer.Typer(add_completion=False)
@@ -60,7 +62,7 @@ def logging_config(verbose: int = 0, *, quiet: bool = False, debug: bool = False
         handler = dict(
             sink=sys.stdout,
             level="DEBUG",
-            format="<cyan>{function}</cyan> - <level>{message}</level>",
+            format="<green>{extra[path].name: <40}</green> - <cyan>{function: <12}</cyan> - <level>{message}</level>",
         )
         if quiet:
             handler.update(level="WARN")
@@ -70,7 +72,7 @@ def logging_config(verbose: int = 0, *, quiet: bool = False, debug: bool = False
             handler.update(level="DEBUG")
         else:
             handler.update(format="{time:%F %T} <level>{message}</level>")
-        logger.configure(handlers=[handler])
+        logger.configure(handlers=[handler], extra={"path": Path(__file__)})
 
     logger.debug(f"{__package__} version {metadata.version(__package__)}")
 
@@ -114,7 +116,12 @@ def check_obs(
     quiet: bool = typer.Option(False, "--quiet", "-q"),
 ):
     """Check requirements for observations datasets"""
-    cmd = split(f"{'' if quiet else '-vv'} --tb=no --pya-pp-obs '{data_set}.*.nc'")
-    cmd.extend(path.resolve() for path in files)  # type:ignore
-    if exit_code := pytest.main(cmd) != 0:
-        sys.exit(exit_code)
+    regex = re.compile(rf"{data_set}.*.nc")
+    for path in files:
+        with logger.contextualize(path=path):
+            if not regex.match(path.name):
+                logger.error(f"does not match '{data_set}-station_name-year.nc'")
+                continue
+
+            ds = xr.open_dataset(path)
+            time_checker(ds)

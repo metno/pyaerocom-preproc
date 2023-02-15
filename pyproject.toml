@@ -24,18 +24,16 @@ xarray = [
 ]
 netCDF4 = "^1.6.2"
 loguru = "^0.6.0"
-pytest = "^7.2.1"
-pytest-sugar = "^0.9.6"
 
 [tool.poetry.scripts]
 pya-pp = "pyaerocom_preproc.cli:main"
 
-[tool.poetry.plugins."pytest11"]
-pya-pp = "pyaerocom_preproc.pytest_plugin"
-
-
 [tool.poetry.group.dev.dependencies]
 bpython = "^0.24"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+pytest-sugar = "^0.9.6"
 
 [build-system]
 requires = ["poetry-core"]
