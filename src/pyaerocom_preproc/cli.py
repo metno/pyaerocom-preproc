@@ -1,27 +1,20 @@
 from __future__ import annotations
 
 import sys
-from getpass import getpass
 from importlib import metadata
 from pathlib import Path
 from textwrap import dedent
 from typing import Optional
 
-if sys.version_info >= (3, 11):  # pragma: no cover
-    import tomllib
-else:  # pragma: no cover
-    import tomli as tomllib
-
-import tomli_w
 import typer
-from dynaconf import ValidationError
 from loguru import logger
 
 from .check_obs import obs_checker
-from .config import SECRETS_PATH, settings
+from .config import config_checker
 
 main = typer.Typer(add_completion=False)
 main.command(name="check-obs")(obs_checker)
+main.command(name="check-s3")(config_checker)
 
 
 def version_callback(value: bool) -> None:  # pragma: no cover
@@ -45,7 +38,7 @@ def version_callback(value: bool) -> None:  # pragma: no cover
         {package("xarray", "netCDF4", "numpy")}
                 
         configuration
-        {package("dynaconf", "tomli" if sys.version_info < (3, 11) else None, "tomli-w")}
+        {package("dynaconf", "tomli-w")}
 
         command line
         {package("typer", "click")}
@@ -86,22 +79,3 @@ def callback(
 ):
     """Check and upload observations and model data for PyAerocom usage"""
     logging_config(verbose, quiet=quiet, debug=debug)
-
-
-@main.command()
-def config(
-    overwrite: bool = typer.Option(False, "--overwrite", "-O"),
-):
-    """Check credentials file"""
-    if not SECRETS_PATH.exists() or overwrite:
-        secrets = {key: getpass(f"{key}: ") for key in ("bucket_name", "key_id", "access_key")}
-        SECRETS_PATH.parent.mkdir(True, exist_ok=True)
-        SECRETS_PATH.write_text(tomli_w.dumps({"s3_bucket": secrets}))
-        SECRETS_PATH.chmod(0o600)  # only user has read/write permissions
-
-    try:
-        settings.validators.validate("s3_bucket")
-    except ValidationError as e:
-        with logger.contextualize(path=SECRETS_PATH):
-            logger.error(e)
-        raise typer.Abort()

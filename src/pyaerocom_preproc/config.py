@@ -1,17 +1,20 @@
 import sys
+from getpass import getpass
+from pathlib import Path
 
 if sys.version_info >= (3, 11):
     from importlib import resources
 else:
     import importlib_resources as resources
 
-from pathlib import Path
+import tomli_w
+import typer
+from dynaconf import Dynaconf, ValidationError, Validator
+from loguru import logger
 
-from dynaconf import Dynaconf, Validator
+__all__ = ["settings", "config_checker"]
 
-__all__ = ["settings", "SECRETS_PATH"]
-
-SECRETS_PATH = Path("~/.config/pya-pp/config.toml").expanduser()
+SECRETS_PATH = Path(f"~/.config/{__package__}/config.toml").expanduser()
 
 
 with resources.as_file(resources.files(__package__) / "settings.toml") as settings:
@@ -28,3 +31,21 @@ with resources.as_file(resources.files(__package__) / "settings.toml") as settin
             )
         ],
     )
+
+
+def config_checker(
+    overwrite: bool = typer.Option(False, "--overwrite", "-O"),
+):
+    """Check S3 credentials file"""
+    if not SECRETS_PATH.exists() or overwrite:
+        secrets = {key: getpass(f"{key}: ") for key in ("bucket_name", "key_id", "access_key")}
+        SECRETS_PATH.parent.mkdir(True, exist_ok=True)
+        SECRETS_PATH.write_text(tomli_w.dumps({"s3_bucket": secrets}))
+        SECRETS_PATH.chmod(0o600)  # only user has read/write permissions
+
+    try:
+        settings.validators.validate("s3_bucket")
+    except ValidationError as e:
+        with logger.contextualize(path=SECRETS_PATH):
+            logger.error(e)
+        raise typer.Abort()
