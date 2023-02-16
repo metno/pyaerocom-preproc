@@ -7,6 +7,8 @@ from typing import Iterator
 
 import loguru
 
+from .checksum import md5sum
+
 __all__ = ["logging_patcher", "read_errors"]
 
 DB_PATH = Path(f"~/.cache/{__package__}/errors.sqlite").expanduser()
@@ -33,10 +35,10 @@ def errors_db(database: Path = DB_PATH) -> Iterator[sqlite3.Connection]:
         database.parent.mkdir(parents=True, exist_ok=True)
         create_table = """
             CREATE TABLE IF NOT EXISTS errors (
-                file_name TEXT NOT NULL,
+                checksum  TEXT NOT NULL,
                 test_func TEXT NOT NULL,
                 error_msg TEXT NOT NULL,
-                UNIQUE(file_name, test_func, error_msg)
+                UNIQUE(checksum, test_func, error_msg)
             );
             """
         with connect(database) as db, closing(db.cursor()) as cur:
@@ -49,7 +51,7 @@ def errors_db(database: Path = DB_PATH) -> Iterator[sqlite3.Connection]:
 def logging_patcher(database: Path = DB_PATH) -> loguru.PatcherFunction:
     """extract error info from records and write to DB"""
     insert = """
-        INSERT or IGNORE INTO errors (file_name, test_func, error_msg)
+        INSERT or IGNORE INTO errors (checksum, test_func, error_msg)
         VALUES (?, ?, ?);
         """
 
@@ -61,9 +63,8 @@ def logging_patcher(database: Path = DB_PATH) -> loguru.PatcherFunction:
         if record["message"].endswith("skip"):
             return
         with errors_db(database) as db, db, closing(db.cursor()) as cur:
-            cur.execute(
-                insert, (record["extra"]["path"].name, record["function"], record["message"])
-            )
+            checksum = md5sum(record["extra"]["path"])
+            cur.execute(insert, (checksum, record["function"], record["message"]))
 
     return patcher
 
@@ -77,8 +78,9 @@ def read_errors(path: Path, *, database: Path = DB_PATH) -> list[tuple[str, str]
         FROM
             errors 
         WHERE
-            file_name IS ?;
+            checksum IS ?;
         """
     with errors_db(database) as db, closing(db.cursor()) as cur:
-        cur.execute(select, (path.name,))
+        checksum = md5sum(path)
+        cur.execute(select, (checksum,))
         return cur.fetchall()
