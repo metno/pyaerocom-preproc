@@ -12,6 +12,7 @@
         "addoption",
         "callobj",
         "excinfo",
+        "executescript",
         "fixturenames",
         "preproc",
         "pyaerocom",

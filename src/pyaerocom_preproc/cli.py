@@ -11,6 +11,7 @@ from loguru import logger
 
 from .check_obs import obs_checker
 from .config import config_checker
+from .error_db import logging_patcher
 
 main = typer.Typer(add_completion=False)
 main.command(name="check-obs")(obs_checker)
@@ -63,7 +64,9 @@ def logging_config(verbose: int = 0, *, quiet: bool = False, debug: bool = False
             handler.update(level="DEBUG")
         else:
             handler.update(format="{time:%F %T} <level>{message}</level>")
-        logger.configure(handlers=[handler], extra={"path": Path(__file__)})
+        logger.configure(
+            handlers=[handler], extra={"path": Path(__file__)}, patcher=logging_patcher()
+        )
 
     logger.debug(f"{__package__} version {metadata.version(__package__)}")
 

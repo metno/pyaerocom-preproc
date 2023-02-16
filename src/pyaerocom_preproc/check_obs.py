@@ -8,6 +8,8 @@ import numpy as np
 import xarray as xr
 from loguru import logger
 
+from .error_db import read_errors
+
 __all__ = ["obs_checker"]
 
 VARIABLE_UNITS = dict(
@@ -41,6 +43,9 @@ def obs_checker(data_set: str, files: List[Path]) -> None:
             ds = xr.open_dataset(path)
             for checker in REGISTERED_CHECKERS:
                 checker(ds)
+
+            if not read_errors(path):
+                logger.success("pass 🎉")
 
 
 @register
