@@ -38,6 +38,9 @@ def version_callback(value: bool) -> None:  # pragma: no cover
 
         data formats and manipulation
         {package("xarray", "netCDF4", "numpy")}
+
+        hashes / checksum
+        {package("blake3")}
                 
         configuration
         {package("dynaconf", "tomli-w")}
