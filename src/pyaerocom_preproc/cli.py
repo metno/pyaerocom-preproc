@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from importlib import metadata
 from pathlib import Path
+from platform import python_version
 from textwrap import dedent
 from typing import Optional
 
@@ -23,18 +24,17 @@ def version_callback(value: bool) -> None:  # pragma: no cover
     if not value:
         return
 
-    def _package(name: str) -> str:
-        return typer.style(name, fg=typer.colors.GREEN, bold=True)
+    _package = lambda name: typer.style(name, fg=typer.colors.GREEN, bold=True)
+    _version = lambda name: typer.style(name, fg=typer.colors.CYAN, bold=True)
 
-    def _version(name: str) -> str:
-        return typer.style(metadata.version(name), fg=typer.colors.CYAN, bold=True)
-
-    def package(*names: str | None) -> str:
-        return ", ".join(f"{_package(name)} ({_version(name)})" for name in names if name)
+    def package(*names: str) -> str:
+        return ", ".join(
+            f"{_package(name)} ({_version(metadata.version(name))})" for name in names
+        )
 
     message = f"""
         {package(__package__)}
-        dependencies (installed version)
+        dependencies (installed version for {_package("Python")} {_version(python_version())})
 
         data formats and manipulation
         {package("xarray", "netCDF4", "numpy")}
@@ -72,7 +72,9 @@ def logging_config(verbose: int = 0, *, quiet: bool = False, debug: bool = False
             handlers=[handler], extra={"path": Path(__file__)}, patcher=logging_patcher()
         )
 
-    logger.debug(f"{__package__} version {metadata.version(__package__)}")
+    logger.debug(
+        f"{__package__} version {metadata.version(__package__)}, Python {python_version()}"
+    )
 
 
 @main.callback()
