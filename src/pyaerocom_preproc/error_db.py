@@ -56,6 +56,10 @@ def logging_patcher(database: Path = DB_PATH) -> loguru.PatcherFunction:
     def patcher(record: loguru.Record) -> None:
         if record["level"].name != "ERROR":
             return
+        if record["function"].endswith("_report"):
+            return
+        if record["message"].endswith("skip"):
+            return
         with errors_db(database) as db, db, closing(db.cursor()) as cur:
             cur.execute(
                 insert, (record["extra"]["path"].name, record["function"], record["message"])

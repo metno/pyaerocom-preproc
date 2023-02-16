@@ -9,13 +9,14 @@ from typing import Optional
 import typer
 from loguru import logger
 
-from .check_obs import obs_checker
+from .check_obs import obs_checker, obs_report
 from .config import config_checker
 from .error_db import logging_patcher
 
 main = typer.Typer(add_completion=False)
-main.command(name="check-obs")(obs_checker)
 main.command(name="check-s3")(config_checker)
+main.command(name="check-obs")(obs_checker)
+main.command(name="report-obs")(obs_report)
 
 
 def version_callback(value: bool) -> None:  # pragma: no cover

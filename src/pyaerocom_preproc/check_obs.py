@@ -10,7 +10,7 @@ from loguru import logger
 
 from .error_db import read_errors
 
-__all__ = ["obs_checker"]
+__all__ = ["obs_checker", "obs_report"]
 
 VARIABLE_UNITS = dict(
     air_quality_index="1",
@@ -37,7 +37,7 @@ def obs_checker(data_set: str, files: List[Path]) -> None:
     for path in files:
         with logger.contextualize(path=path):
             if not regex.match(path.name):
-                logger.error(f"filename does not match r'{regex.pattern}'")
+                logger.error(f"filename does not match r'{regex.pattern}', skip")
                 continue
 
             ds = xr.open_dataset(path)
@@ -46,6 +46,20 @@ def obs_checker(data_set: str, files: List[Path]) -> None:
 
             if not read_errors(path):
                 logger.success("pass 🎉")
+
+
+def obs_report(data_set: str, files: List[Path]):
+    """Report known errors from previous checks
+
+    Files without known errors will be re-tested
+    """
+    for path in files:
+        with logger.contextualize(path=path):
+            if not (errors := read_errors(path)):
+                obs_checker(data_set, [path])
+                continue
+            for func_name, message in errors:
+                logger.patch(lambda record: record.update(function=func_name)).error(message)
 
 
 @register
