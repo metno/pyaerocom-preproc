@@ -9,6 +9,7 @@ import xarray as xr
 from loguru import logger
 
 from .error_db import read_errors
+from .s3_bucket import s3_upload
 
 __all__ = ["obs_checker", "obs_report"]
 
@@ -60,6 +61,25 @@ def obs_report(data_set: str, files: List[Path]):
                 continue
             for func_name, message in errors:
                 logger.patch(lambda record: record.update(function=func_name)).error(message)
+
+
+def obs_upload(data_set: str, files: List[Path]):
+    """Upload files without known errors from previous checks
+
+    Files without known errors will be re-tested
+    """
+    regex = re.compile(rf"{data_set}-.*-(?P<year>\d\d\d\d).nc")
+    for path in files:
+        with logger.contextualize(path=path):
+            match = regex.search(path.name)
+            if match is None:
+                logger.error(f"could not infer year from filename, skip")
+                continue
+            if not read_errors(path):
+                obs_checker(data_set, [path])
+            if not read_errors(path):
+                year = match.group("year")
+                s3_upload(path, object_name=f"{data_set}/download/{year}/{path.name}")
 
 
 @register

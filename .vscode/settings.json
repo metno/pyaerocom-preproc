@@ -10,6 +10,7 @@
     "python.linting.mypyEnabled": true,
     "cSpell.ignoreWords": [
         "addoption",
+        "botocore",
         "callobj",
         "excinfo",
         "executescript",
