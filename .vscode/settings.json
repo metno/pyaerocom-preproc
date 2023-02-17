@@ -23,6 +23,7 @@
         "Aerocom",
         "boto",
         "dynaconf",
+        "hashlib",
         "Metafunc",
         "tomli"
     ]
