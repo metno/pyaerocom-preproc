@@ -7,7 +7,7 @@ from typing import Iterator
 
 import loguru
 
-from .checksum import blake3sum
+from .checksum import checksum
 
 __all__ = ["logging_patcher", "read_errors"]
 
@@ -63,8 +63,8 @@ def logging_patcher(database: Path = DB_PATH) -> loguru.PatcherFunction:
         if record["message"].endswith("skip"):
             return
         with errors_db(database) as db, db, closing(db.cursor()) as cur:
-            checksum = blake3sum(record["extra"]["path"])
-            cur.execute(insert, (checksum, record["function"], record["message"]))
+            _checksum = checksum(record["extra"]["path"])
+            cur.execute(insert, (_checksum, record["function"], record["message"]))
 
     return patcher
 
@@ -81,6 +81,6 @@ def read_errors(path: Path, *, database: Path = DB_PATH) -> list[tuple[str, str]
             checksum IS ?;
         """
     with errors_db(database) as db, closing(db.cursor()) as cur:
-        checksum = blake3sum(path)
-        cur.execute(select, (checksum,))
+        _checksum = checksum(path)
+        cur.execute(select, (_checksum,))
         return cur.fetchall()

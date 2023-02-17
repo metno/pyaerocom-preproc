@@ -45,8 +45,11 @@ def obs_checker(data_set: str, files: List[Path]) -> None:
             for checker in REGISTERED_CHECKERS:
                 checker(ds)
 
-            if not read_errors(path):
+            if not (errors := read_errors(path)):
                 logger.success("pass 🎉")
+                continue
+
+            logger.debug(f"{len(errors)} errors")
 
 
 def obs_report(data_set: str, files: List[Path]):
@@ -59,8 +62,10 @@ def obs_report(data_set: str, files: List[Path]):
             if not (errors := read_errors(path)):
                 obs_checker(data_set, [path])
                 continue
+
             for func_name, message in errors:
                 logger.patch(lambda record: record.update(function=func_name)).error(message)
+            logger.debug(f"{len(errors)} errors")
 
 
 def obs_upload(data_set: str, files: List[Path]):

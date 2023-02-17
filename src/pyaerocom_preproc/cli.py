@@ -11,6 +11,7 @@ import typer
 from loguru import logger
 
 from .check_obs import obs_checker, obs_report, obs_upload
+from .checksum import HASHLIB
 from .config import config_checker
 from .error_db import logging_patcher
 
@@ -41,7 +42,7 @@ def version_callback(value: bool) -> None:  # pragma: no cover
         {package("xarray", "netCDF4", "numpy")}
 
         hashes / checksum
-        {package("blake3")}
+        {_package(HASHLIB) if HASHLIB.startswith("hashlib") else package(HASHLIB)}
                 
         configuration
         {package("dynaconf", "tomli-w")}

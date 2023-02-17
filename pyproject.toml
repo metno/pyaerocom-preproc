@@ -23,7 +23,10 @@ xarray = [
 ]
 netCDF4 = "^1.6.2"
 loguru = "^0.6.0"
-blake3 = "^0.3.3"
+blake3 = { version = "^0.3.3", optional = true }
+
+[tool.poetry.extras]
+blake3 = ["blake3"]
 
 [tool.poetry.scripts]
 pya-pp = "pyaerocom_preproc.cli:main"

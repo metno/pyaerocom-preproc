@@ -1,14 +1,22 @@
 from functools import lru_cache
 from pathlib import Path
 
-from blake3 import blake3
+try:
+    HASHLIB = "blake3"
+    from blake3 import blake3 as hasher  # type: ignore
+except ModuleNotFoundError:
+    HASHLIB = "hashlib.blake2b"
+    from hashlib import blake2b as hasher
+
+
+__all__ = ["HASHLIB", "checksum"]
 
 
 @lru_cache
-def blake3sum(path: Path) -> str:
-    hash = blake3()
+def checksum(path: Path) -> str:
+    _checksum = hasher()
     with path.open("rb") as f:
         # Read and update hash in chunks of 4K
         for block in iter(lambda: f.read(4096), b""):
-            hash.update(block)
-    return hash.hexdigest()
+            _checksum.update(block)
+    return _checksum.hexdigest()
