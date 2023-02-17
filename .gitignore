@@ -1,6 +1,10 @@
 data/*
 **/*.env
 
+# scalene
+profile.html
+profile.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

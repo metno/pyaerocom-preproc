@@ -33,6 +33,7 @@ pya-pp = "pyaerocom_preproc.cli:main"
 
 [tool.poetry.group.dev.dependencies]
 bpython = "^0.24"
+scalene = "^1.5.19"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.1"
