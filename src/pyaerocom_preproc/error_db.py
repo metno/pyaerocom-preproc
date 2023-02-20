@@ -9,7 +9,7 @@ import loguru
 
 from .checksum import checksum
 
-__all__ = ["logging_patcher", "read_errors"]
+__all__ = ["logging_patcher", "read_errors", "DB_PATH"]
 
 DB_PATH = Path(f"~/.cache/{__package__}/errors.sqlite").expanduser()
 

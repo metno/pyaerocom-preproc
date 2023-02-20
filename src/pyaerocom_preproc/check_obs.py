@@ -5,10 +5,11 @@ from pathlib import Path
 from typing import Callable, List, Literal
 
 import numpy as np
+import typer
 import xarray as xr
 from loguru import logger
 
-from .error_db import read_errors
+from .error_db import DB_PATH, read_errors
 from .s3_bucket import s3_upload
 
 __all__ = ["obs_checker", "obs_report"]
@@ -52,11 +53,19 @@ def obs_checker(data_set: str, files: List[Path]) -> None:
             logger.debug(f"{len(errors)} errors")
 
 
-def obs_report(data_set: str, files: List[Path]):
+def obs_report(
+    data_set: str,
+    files: List[Path],
+    clear_cache: bool = typer.Option(
+        False, "--clear-cache", help="clear cached errors and rerun check"
+    ),
+):
     """Report known errors from previous checks
 
     Files without known errors will be re-tested
     """
+    if clear_cache:
+        DB_PATH.unlink(missing_ok=True)
     for path in files:
         with logger.contextualize(path=path):
             if not (errors := read_errors(path)):
