@@ -40,6 +40,7 @@ def config_checker(
     if not SECRETS_PATH.exists() or overwrite:
         secrets = {key: getpass(f"{key}: ") for key in ("bucket_name", "key_id", "access_key")}
         SECRETS_PATH.parent.mkdir(True, exist_ok=True)
+        SECRETS_PATH.parent.chmod(0o700)  # only user has read/write/execute permissions
         SECRETS_PATH.write_text(tomli_w.dumps({"s3_bucket": secrets}))
         SECRETS_PATH.chmod(0o600)  # only user has read/write permissions
 

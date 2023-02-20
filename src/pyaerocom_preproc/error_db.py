@@ -33,6 +33,7 @@ def errors_db(database: Path = DB_PATH) -> Iterator[sqlite3.Connection]:
     """
     if not database.exists():
         database.parent.mkdir(parents=True, exist_ok=True)
+        database.parent.chmod(0o700)  # only user has read/write/execute permissions
         create_table = """
             CREATE TABLE IF NOT EXISTS errors (
                 checksum  TEXT NOT NULL,
