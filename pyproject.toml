@@ -46,6 +46,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
+addopts = ["--import-mode=importlib"]
 
 [tool.coverage.run]
 source = ["pyaerocom_preproc"]
@@ -82,3 +83,27 @@ sqlite_cache = true
 [[tool.mypy.overrides]]
 module = ["xarray"]
 ignore_missing_imports = true
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39, py310, py311, lint
+skip_missing_interpreters = True
+isolated_build = True
+
+[testenv]
+commands_pre =
+    python --version
+commands =
+    pytest -ra -q --cov {posargs}
+deps =
+    pytest
+    pytest-cov
+
+[testenv:lint]
+skip_install=True
+commands =
+    pre-commit run --all-files --show-diff-on-failure
+deps =
+    pre-commit
+"""
