@@ -16,8 +16,8 @@ def s3_client():
     return boto3.client(
         "s3",
         endpoint_url=settings.s3_bucket.endpoint_url,
-        aws_access_key_id=settings.s3_bucket.key_id,
-        aws_secret_access_key=settings.s3_bucket.access_key,
+        aws_access_key_id=settings.s3_bucket.access_key_id,
+        aws_secret_access_key=settings.s3_bucket.secret_access_key,
     )
 
 

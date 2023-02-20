@@ -25,8 +25,8 @@ with resources.as_file(resources.files(__package__) / "settings.toml") as settin
             Validator(
                 "s3_bucket.endpoint_url",
                 "s3_bucket.bucket_name",
-                "s3_bucket.key_id",
-                "s3_bucket.access_key",
+                "s3_bucket.access_key_id",
+                "s3_bucket.secret_access_key",
                 must_exist=True,
             )
         ],
@@ -38,7 +38,10 @@ def config_checker(
 ):
     """Check S3 credentials file"""
     if not SECRETS_PATH.exists() or overwrite:
-        secrets = {key: getpass(f"{key}: ") for key in ("bucket_name", "key_id", "access_key")}
+        secrets = {
+            key: getpass(f"{key}: ")
+            for key in ("bucket_name", "access_key_id", "secret_access_key")
+        }
         SECRETS_PATH.parent.mkdir(True, exist_ok=True)
         SECRETS_PATH.parent.chmod(0o700)  # only user has read/write/execute permissions
         SECRETS_PATH.write_text(tomli_w.dumps({"s3_bucket": secrets}))
