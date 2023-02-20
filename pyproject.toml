@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyaerocom-preproc"
-version = "0.1.1"
+version = "0.1.2"
 description = "Check and upload observations and model data for PyAerocom usage"
 authors = [
     "Alvaro Valdebenito <alvarov@met.no>",
