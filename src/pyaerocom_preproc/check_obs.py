@@ -73,7 +73,9 @@ def obs_report(
                 continue
 
             for func_name, message in errors:
-                logger.patch(lambda record: record.update(function=func_name)).error(message)
+                logger.patch(
+                    lambda record: record.update(function=func_name)  # type:ignore[call-arg]
+                ).error(message)
             logger.debug(f"{len(errors)} errors")
 
 

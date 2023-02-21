@@ -34,6 +34,7 @@ pya-pp = "pyaerocom_preproc.cli:main"
 [tool.poetry.group.dev.dependencies]
 bpython = "^0.24"
 scalene = "^1.5.19"
+mypy = "^1.0.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.1"
@@ -81,7 +82,7 @@ sqlite_cache = true
 # exclude = ""
 
 [[tool.mypy.overrides]]
-module = ["xarray"]
+module = ["xarray", "dynaconf", "boto3", "botocore.*"]
 ignore_missing_imports = true
 
 [tool.tox]
