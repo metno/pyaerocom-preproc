@@ -16,7 +16,6 @@ from .config import config_checker
 from .error_db import logging_patcher
 
 main = typer.Typer(add_completion=False)
-main.command(name="check-s3")(config_checker)
 main.command(name="check-obs")(obs_checker)
 main.command(name="report-obs")(obs_report)
 main.command(name="upload-obs")(obs_upload)
@@ -90,3 +89,9 @@ def callback(
 ):
     """Check and upload observations and model data for PyAerocom usage"""
     logging_config(verbose, quiet=quiet, debug=debug)
+
+
+@main.command(help=config_checker.__doc__)
+def check_s3(overwrite: bool = typer.Option(False, "--overwrite", "-O")):
+    if not config_checker(overwrite=overwrite):
+        raise typer.Abort()

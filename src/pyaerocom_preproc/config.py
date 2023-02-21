@@ -8,7 +8,6 @@ else:
     import importlib_resources as resources
 
 import tomli_w
-import typer
 from dynaconf import Dynaconf, ValidationError, Validator
 from loguru import logger
 
@@ -17,39 +16,47 @@ __all__ = ["settings", "config_checker"]
 SECRETS_PATH = Path(f"~/.config/{__package__}/config.toml").expanduser()
 
 
-with resources.as_file(resources.files(__package__) / "settings.toml") as settings:
-    settings = Dynaconf(
-        envvar_prefix="PYA_PP",
-        settings_files=[SECRETS_PATH, settings],
-        validators=[
-            Validator(
-                "s3_bucket.endpoint_url",
-                "s3_bucket.bucket_name",
-                "s3_bucket.access_key_id",
-                "s3_bucket.secret_access_key",
-                must_exist=True,
-            )
-        ],
-    )
+def _settings(secrets: Path) -> Dynaconf:
+    with resources.as_file(resources.files(__package__) / "settings.toml") as settings:
+        return Dynaconf(
+            envvar_prefix="PYA_PP",
+            settings_file=secrets,
+            includes=[settings],
+            validators=[
+                Validator(
+                    "s3_bucket.endpoint_url",
+                    "s3_bucket.bucket_name",
+                    "s3_bucket.access_key_id",
+                    "s3_bucket.secret_access_key",
+                    must_exist=True,
+                )
+            ],
+        )
+
+
+settings = _settings(SECRETS_PATH)
 
 
 def config_checker(
-    overwrite: bool = typer.Option(False, "--overwrite", "-O"),
-):
+    *,
+    secrets: Path = SECRETS_PATH,
+    overwrite: bool = False,
+) -> bool:
     """Check S3 credentials file"""
-    if not SECRETS_PATH.exists() or overwrite:
-        secrets = {
+    if not secrets.exists() or overwrite:
+        _secrets = {
             key: getpass(f"{key}: ")
             for key in ("bucket_name", "access_key_id", "secret_access_key")
         }
-        SECRETS_PATH.parent.mkdir(True, exist_ok=True)
-        SECRETS_PATH.parent.chmod(0o700)  # only user has read/write/execute permissions
-        SECRETS_PATH.write_text(tomli_w.dumps({"s3_bucket": secrets}))
-        SECRETS_PATH.chmod(0o600)  # only user has read/write permissions
+        secrets.parent.mkdir(True, exist_ok=True)
+        secrets.parent.chmod(0o700)  # only user has read/write/execute permissions
+        secrets.write_text(tomli_w.dumps({"s3_bucket": _secrets}))
+        secrets.chmod(0o600)  # only user has read/write permissions
 
     try:
-        settings.validators.validate("s3_bucket")
+        _settings(secrets).validators.validate("s3_bucket")
     except ValidationError as e:
-        with logger.contextualize(path=SECRETS_PATH):
-            logger.error(e)
-        raise typer.Abort()
+        logger.bind(path=secrets).error(e)
+        return False
+    else:
+        return True
