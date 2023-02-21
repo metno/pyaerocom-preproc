@@ -12,7 +12,7 @@ from loguru import logger
 from .error_db import DB_PATH, read_errors
 from .s3_bucket import s3_upload
 
-__all__ = ["obs_checker", "obs_report"]
+__all__ = ["obs_report"]
 
 VARIABLE_UNITS = dict(
     air_quality_index="1",
@@ -33,24 +33,33 @@ def register(func):
     return func
 
 
-def obs_checker(data_set: str, files: List[Path]) -> None:
+def _check(path: Path) -> bool:
     """Check requirements for observations datasets"""
-    regex = re.compile(rf"{data_set}.*.nc")
-    for path in files:
-        with logger.contextualize(path=path):
-            if not regex.match(path.name):
-                logger.error(f"filename does not match r'{regex.pattern}', skip")
-                continue
+    ds = xr.open_dataset(path)
 
-            ds = xr.open_dataset(path)
-            for checker in REGISTERED_CHECKERS:
-                checker(ds)
+    with logger.contextualize(path=path):
+        for checker in REGISTERED_CHECKERS:
+            checker(ds)
 
-            if not (errors := read_errors(path)):
-                logger.success("pass 🎉")
-                continue
-
+        if errors := read_errors(path):
             logger.debug(f"{len(errors)} errors")
+
+    return not errors
+
+
+def _report(path: Path) -> bool:
+    """Report known errors from previous checks"""
+    if not (errors := read_errors(path)):
+        return True
+
+    with logger.contextualize(path=path):
+        for func_name, message in errors:
+            logger.patch(
+                lambda record: record.update(function=func_name)  # type:ignore[call-arg]
+            ).error(message)
+        logger.debug(f"{len(errors)} errors")
+
+    return False
 
 
 def obs_report(
@@ -60,23 +69,18 @@ def obs_report(
         False, "--clear-cache", help="clear cached errors and rerun check"
     ),
 ):
-    """Report known errors from previous checks
-
-    Files without known errors will be re-tested
-    """
+    """Report known errors from previous checks, files without known errors will be re-tested."""
     if clear_cache:
         DB_PATH.unlink(missing_ok=True)
-    for path in files:
-        with logger.contextualize(path=path):
-            if not (errors := read_errors(path)):
-                obs_checker(data_set, [path])
-                continue
 
-            for func_name, message in errors:
-                logger.patch(
-                    lambda record: record.update(function=func_name)  # type:ignore[call-arg]
-                ).error(message)
-            logger.debug(f"{len(errors)} errors")
+    regex = re.compile(rf"{data_set}.*.nc")
+    for path in files:
+        if not regex.match(path.name):
+            logger.bind(path=path).error(f"filename does not match r'{regex.pattern}', skip")
+            continue
+
+        if _report(path) and _check(path):
+            logger.bind(path=path).success("pass 🎉")
 
 
 def obs_upload(data_set: str, files: List[Path]):
@@ -86,16 +90,13 @@ def obs_upload(data_set: str, files: List[Path]):
     """
     regex = re.compile(rf"{data_set}-.*-(?P<year>\d\d\d\d).nc")
     for path in files:
-        with logger.contextualize(path=path):
-            match = regex.search(path.name)
-            if match is None:
-                logger.error(f"could not infer year from filename, skip")
-                continue
-            if not read_errors(path):
-                obs_checker(data_set, [path])
-            if not read_errors(path):
-                year = match.group("year")
-                s3_upload(path, object_name=f"{data_set}/download/{year}/{path.name}")
+        if (match := regex.search(path.name)) is None:
+            logger.bind(path=path).error(f"could not infer year from filename, skip")
+            continue
+
+        if _report(path) and _check(path):
+            year = match.group("year")
+            s3_upload(path, object_name=f"{data_set}/download/{year}/{path.name}")
 
 
 @register

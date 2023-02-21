@@ -10,13 +10,12 @@ from typing import Optional
 import typer
 from loguru import logger
 
-from .check_obs import obs_checker, obs_report, obs_upload
+from .check_obs import obs_report, obs_upload
 from .checksum import HASHLIB
 from .config import config
 from .error_db import logging_patcher
 
 main = typer.Typer(add_completion=False)
-main.command(name="check-obs")(obs_checker)
 main.command(name="report-obs")(obs_report)
 main.command(name="upload-obs")(obs_upload)
 
