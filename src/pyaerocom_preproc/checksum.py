@@ -1,10 +1,10 @@
 from functools import lru_cache
 from pathlib import Path
 
-try:
+try:  # pragma: no cover
     HASHLIB = "blake3"
     from blake3 import blake3 as hasher  # type: ignore
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     HASHLIB = "hashlib.blake2b"
     from hashlib import blake2b as hasher
 
