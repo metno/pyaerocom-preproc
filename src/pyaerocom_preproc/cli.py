@@ -12,7 +12,7 @@ from loguru import logger
 
 from .check_obs import obs_checker, obs_report, obs_upload
 from .checksum import HASHLIB
-from .config import config_checker
+from .config import config
 from .error_db import logging_patcher
 
 main = typer.Typer(add_completion=False)
@@ -91,7 +91,7 @@ def callback(
     logging_config(verbose, quiet=quiet, debug=debug)
 
 
-@main.command(help=config_checker.__doc__)
+@main.command(help=config.__doc__)
 def check_s3(overwrite: bool = typer.Option(False, "--overwrite", "-O")):
-    if not config_checker(overwrite=overwrite):
+    if config(overwrite=overwrite) is None:
         raise typer.Abort()

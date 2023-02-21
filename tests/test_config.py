@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import tomli_w
 from dynaconf import Dynaconf, ValidationError
-from pyaerocom_preproc.config import _settings, config_checker
+from pyaerocom_preproc.config import _settings, config
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def secrets(tmp_path: Path, monkeypatch) -> Path:
 @pytest.fixture
 def settings_empty(secrets: Path) -> Dynaconf:
     assert not secrets.exists()
-    return _settings(secrets)
+    return _settings(secrets=secrets)
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def settings(secrets: Path) -> Dynaconf:
     secrets.write_text(tomli_w.dumps({"s3_bucket": {s: s.split("_")[-1] for s in _secrets}}))
 
     assert secrets.exists()
-    return _settings(secrets)
+    return _settings(secrets=secrets)
 
 
 def test_settings(settings: Dynaconf):
@@ -41,8 +41,8 @@ def test_settings_fail(settings_empty: Dynaconf):
         settings_empty.validators.validate("s3_bucket")
 
 
-def test_config_checker(secrets: Path, settings: Dynaconf):
-    assert config_checker(secrets=secrets)
+def test_config(secrets: Path, settings: Dynaconf):
+    assert config(secrets=secrets) is settings
     assert secrets.exists()
     assert settings.s3_bucket.bucket_name == "name"
     assert settings.s3_bucket.access_key_id == "id"
@@ -50,8 +50,8 @@ def test_config_checker(secrets: Path, settings: Dynaconf):
     assert settings.s3_bucket.endpoint_url == "https://rgw.met.no"
 
 
-def test_config_checker_overwrite(secrets: Path, settings: Dynaconf):
-    assert config_checker(secrets=secrets, overwrite=True)
+def test_config_overwrite(secrets: Path, settings: Dynaconf):
+    assert config(secrets=secrets, overwrite=True) is settings
     assert secrets.exists()
     assert settings.s3_bucket.bucket_name == "bucket_name"
     assert settings.s3_bucket.access_key_id == "access_key_id"
@@ -59,8 +59,8 @@ def test_config_checker_overwrite(secrets: Path, settings: Dynaconf):
     assert settings.s3_bucket.endpoint_url == "https://rgw.met.no"
 
 
-def test_config_checker_input(secrets: Path, settings_empty: Dynaconf):
-    config_checker(secrets=secrets)
+def test_config_input(secrets: Path, settings_empty: Dynaconf):
+    assert config(secrets=secrets) is settings_empty
     assert secrets.exists()
     assert settings_empty.s3_bucket.bucket_name == "bucket_name"
     assert settings_empty.s3_bucket.access_key_id == "access_key_id"

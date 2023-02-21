@@ -1,22 +1,26 @@
+from __future__ import annotations
+
 import sys
+from functools import lru_cache
 from getpass import getpass
 from pathlib import Path
 
-if sys.version_info >= (3, 11):
+if sys.version_info >= (3, 11):  # pragma: no cover
     from importlib import resources
-else:
+else:  # pragma: no cover
     import importlib_resources as resources
 
 import tomli_w
 from dynaconf import Dynaconf, ValidationError, Validator
 from loguru import logger
 
-__all__ = ["settings", "config_checker"]
+__all__ = ["config"]
 
 SECRETS_PATH = Path(f"~/.config/{__package__}/config.toml").expanduser()
 
 
-def _settings(secrets: Path) -> Dynaconf:
+@lru_cache
+def _settings(*, secrets: Path = SECRETS_PATH) -> Dynaconf:
     with resources.as_file(resources.files(__package__) / "settings.toml") as settings:
         return Dynaconf(
             envvar_prefix="PYA_PP",
@@ -34,14 +38,12 @@ def _settings(secrets: Path) -> Dynaconf:
         )
 
 
-settings = _settings(SECRETS_PATH)
-
-
-def config_checker(
+@lru_cache
+def config(
     *,
     secrets: Path = SECRETS_PATH,
     overwrite: bool = False,
-) -> bool:
+) -> Dynaconf | None:
     """Check S3 credentials file"""
     if not secrets.exists() or overwrite:
         _secrets = {
@@ -53,10 +55,11 @@ def config_checker(
         secrets.write_text(tomli_w.dumps({"s3_bucket": _secrets}))
         secrets.chmod(0o600)  # only user has read/write permissions
 
+    settings = _settings(secrets=secrets)
     try:
-        _settings(secrets).validators.validate("s3_bucket")
-    except ValidationError as e:
+        settings.validators.validate("s3_bucket")
+    except ValidationError as e:  # pragma: no cover
         logger.bind(path=secrets).error(e)
-        return False
+        return None
     else:
-        return True
+        return settings
