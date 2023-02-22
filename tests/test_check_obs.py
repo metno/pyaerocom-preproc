@@ -116,7 +116,6 @@ def test_time_checker_empty(empty_nc: Path, patched_logger: loguru.Logger, datab
         time_checker(xr.open_dataset(empty_nc))
 
     assert set(read_errors(empty_nc, database=database)) == {
-        ("time_checker", "missing 'time' field"),
         ("time_checker", "missing 'datetime_start' field"),
         ("time_checker", "missing 'datetime_stop' field"),
     }
@@ -153,5 +152,5 @@ def test_data_checker_empty(empty_nc: Path, patched_logger: loguru.Logger, datab
         data_checker(xr.open_dataset(empty_nc))
 
     assert set(read_errors(empty_nc, database=database)) == {
-        ("data_checker", "missing 'time' field"),
+        ("data_checker", "missing obs found"),
     }

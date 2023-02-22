@@ -101,22 +101,20 @@ def obs_upload(data_set: str, files: List[Path]):
 
 @register
 def time_checker(ds: xr.Dataset) -> None:
-    if (time := ds.get("time")) is None:
-        logger.error("missing 'time' field")
     if (datetime_start := ds.get("datetime_start")) is None:
         logger.error("missing 'datetime_start' field")
     if (datetime_stop := ds.get("datetime_stop")) is None:
         logger.error("missing 'datetime_stop' field")
 
-    if time is None or datetime_start is None or datetime_stop is None:
+    if datetime_start is None or datetime_stop is None:
         return
 
-    if datetime_start.size != time.size:
-        logger.error(f"{datetime_start.size=} != {time.size=}")
-    if datetime_stop.size != time.size:
-        logger.error(f"{datetime_stop.size=} != {time.size=}")
+    if datetime_start.dims != ("time",):
+        logger.error(f"{datetime_start.dims=} != ('time',)")
+    if datetime_stop.dims != ("time",):
+        logger.error(f"{datetime_stop.dims=} != ('time',)")
 
-    if not (datetime_start.size == datetime_stop.size == time.size):
+    if not (datetime_start.dims == datetime_stop.dims == ("time",)):
         return
 
     if not monotonically_increasing(datetime_start):
@@ -135,7 +133,7 @@ def time_checker(ds: xr.Dataset) -> None:
 
     days = 366 if datetime_start.dt.is_leap_year.any() else 365
     records = {"1D": days, "1H": days * 24}
-    if freq in records and time.size < records[freq]:
+    if freq in records and datetime_start.size < records[freq]:
         logger.error("not a full year")
 
 
@@ -185,10 +183,6 @@ def coord_checker(ds: xr.Dataset) -> None:
 
 @register
 def data_checker(ds: xr.Dataset) -> None:
-    if (time := ds.get("time")) is None:
-        logger.error("missing 'time' field")
-        return
-
     if not set(VARIABLE_UNITS).intersection(ds.data_vars):
         logger.error("missing obs found")
         return
@@ -197,8 +191,8 @@ def data_checker(ds: xr.Dataset) -> None:
         if var not in ds.data_vars:
             continue
 
-        if (size := ds[var].size) != time.size:
-            logger.error(f"{var}.{size=} != {time.size}")
+        if (dims := ds[var].dims) != ("time",):
+            logger.error(f"{var}.{dims=} != ('time',)")
         if (units := ds[var].attrs.get("units")) is None:
             logger.error(f"missing {var}.units")
             continue
