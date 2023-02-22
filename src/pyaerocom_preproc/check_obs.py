@@ -206,5 +206,7 @@ def data_checker(ds: xr.Dataset) -> None:
             logger.error(f"{var}.{units=} != '{_units}'")
 
     for var in VARIABLE_UNITS:
+        if var not in ds.data_vars:
+            continue
         if (ds[var] < 0).any():
             logger.error(f"{var} has negative values")

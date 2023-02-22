@@ -16,7 +16,10 @@ dynaconf = "^3.1.11"
 typer = "^0.7.0"
 tomli-w = "^1.0.0"
 importlib-resources = { version = "^5.10.2", python = "<3.11" }
-numpy = "^1.24.2"
+numpy = [
+    { version = "<1.20", python = "~3.8" },
+    { version = "^1.24.2", python = "^3.9" },
+]
 xarray = [
     { version = "<2023.2", python = "~3.8" },
     { version = ">=2023.2", python = "^3.9" },

@@ -24,6 +24,7 @@
     "cSpell.words": [
         "Aerocom",
         "boto",
+        "dtype",
         "dynaconf",
         "hashlib",
         "Metafunc",
