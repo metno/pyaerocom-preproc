@@ -7,6 +7,8 @@ import pytest
 from loguru import logger as _logger
 from pyaerocom_preproc.error_db import logging_patcher
 
+pytest_plugins = ["tests.check_obs.fixtures"]
+
 
 @pytest.fixture(params=("check1", "hash2", "test3"))
 def text(request) -> str:
