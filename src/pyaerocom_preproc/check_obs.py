@@ -15,13 +15,13 @@ from .s3_bucket import s3_upload
 __all__ = ["obs_report"]
 
 VARIABLE_UNITS = dict(
-    air_quality_index="1",
-    CO_density="mg/m3",
-    NO2_density="ug/m3",
-    O3_density="ug/m3",
-    PM10_density="ug/m3",
-    PM2p5_density="ug/m3",
-    SO2_density="ug/m3",
+    air_quality_index={"1"},
+    CO_density={"mg/m3", "mg m-3"},
+    NO2_density={"ug/m3", "ug m-3"},
+    O3_density={"ug/m3", "ug m-3"},
+    PM10_density={"ug/m3", "ug m-3"},
+    PM2p5_density={"ug/m3", "ug m-3"},
+    SO2_density={"ug/m3", "ug m-3"},
 )
 
 
@@ -196,8 +196,8 @@ def data_checker(ds: xr.Dataset) -> None:
         if (units := ds[var].attrs.get("units")) is None:
             logger.error(f"missing {var}.units")
             continue
-        if units != _units:
-            logger.error(f"{var}.{units=} != '{_units}'")
+        if units not in _units:
+            logger.error(f"{var}.{units=} not in '{_units}'")
 
     for var in VARIABLE_UNITS:
         if var not in ds.data_vars:
