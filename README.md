@@ -26,7 +26,7 @@ pipx install pyaerocom-preproc[blake3]@git+ssh://git@gitlab.met.no/alvarov/pyaer
 
 ## Quick Tutorial
 
-After installation, you may run `pya-pp --help` in the command line to see the various options and commands. Running `--help` after any of the commands shows additoinal information (e.g., `pya-pp report-obs --help`).
+After installation, you may run `pya-pp --help` in the command line to see the various options and commands. Running `--help` after any of the commands shows additional information (e.g., `pya-pp report-obs --help`).
 
 A good first step is to run the `check-s3` command to input your credentials. You will be asked to enter the "bucket_name", "access_key_id", and "secret_access_key" provided to you.
 
