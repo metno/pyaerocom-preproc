@@ -176,9 +176,9 @@ def coord_checker(ds: xr.Dataset) -> None:
             logger.error(f"{coord.name}.{units=} != '{_units}'")
 
     if (latitude < -90).any() or (latitude > 90).any():
-        logger.error(f"out of latitude range [-90, 90]")
+        logger.error("latitude out of range [-90, 90]")
     if (longitude < -180).any() or (longitude > 180).any():
-        logger.error(f"out of longitude range [-180, 180]")
+        logger.error("longitude out of range [-180, 180]")
 
 
 @register
