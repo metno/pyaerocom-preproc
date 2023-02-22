@@ -5,19 +5,17 @@ from importlib import metadata
 from pathlib import Path
 from platform import python_version
 from textwrap import dedent
-from typing import Optional
+from typing import List, Optional
 
 import typer
 from loguru import logger
 
-from .check_obs import obs_report, obs_upload
+from .check_obs import obs_report
 from .checksum import HASHLIB
 from .config import config
 from .error_db import logging_patcher
 
 main = typer.Typer(add_completion=False)
-main.command(name="report-obs")(obs_report)
-main.command(name="upload-obs")(obs_upload)
 
 
 def version_callback(value: bool) -> None:  # pragma: no cover
@@ -94,3 +92,24 @@ def callback(
 def check_s3(overwrite: bool = typer.Option(False, "--overwrite", "-O")):
     if config(overwrite=overwrite) is None:
         raise typer.Abort()
+
+
+@main.command()
+def report_obs(
+    data_set: str,
+    files: List[Path],
+    clear_cache: bool = typer.Option(
+        False, "--clear-cache", help="clear cached errors and rerun check"
+    ),
+):
+    """Report known errors from previous checks, files without known errors will be re-tested."""
+    obs_report(data_set, files, clear_cache=clear_cache)
+
+
+@main.command()
+def upload_obs(data_set: str, files: List[Path]):
+    """Upload files without known errors from previous checks
+
+    Files without known errors will be re-tested
+    """
+    obs_report(data_set, files, upload=True)

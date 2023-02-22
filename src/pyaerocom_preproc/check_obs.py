@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Callable, List, Literal
+from typing import Callable, Literal
 
 import numpy as np
-import typer
 import xarray as xr
 from loguru import logger
 
@@ -63,13 +62,13 @@ def _report(path: Path) -> bool:
 
 
 def obs_report(
-    data_set: str,
-    files: List[Path],
-    clear_cache: bool = typer.Option(
-        False, "--clear-cache", help="clear cached errors and rerun check"
-    ),
+    data_set: str, files: list[Path], *, clear_cache: bool = False, upload: bool = False
 ):
-    """Report known errors from previous checks, files without known errors will be re-tested."""
+    """Report known errors from previous checks, files without known errors will be re-tested.
+
+    If `clear_cache` is True: all files will be retested
+    If `upload` is True: upload files, if all files passed the check.
+    """
     if clear_cache:
         DB_PATH.unlink(missing_ok=True)
 
@@ -81,22 +80,20 @@ def obs_report(
 
         if _report(path) and _check(path):
             logger.bind(path=path).success("pass 🎉")
+        else:
+            upload = False
 
+    if not upload:
+        return
 
-def obs_upload(data_set: str, files: List[Path]):
-    """Upload files without known errors from previous checks
-
-    Files without known errors will be re-tested
-    """
     regex = re.compile(rf"{data_set}-.*-(?P<year>\d\d\d\d).nc")
     for path in files:
         if (match := regex.search(path.name)) is None:
             logger.bind(path=path).error(f"could not infer year from filename, skip")
             continue
 
-        if _report(path) and _check(path):
-            year = match.group("year")
-            s3_upload(path, object_name=f"{data_set}/download/{year}/{path.name}")
+        year = match.group("year")
+        s3_upload(path, object_name=f"{data_set}/download/{year}/{path.name}")
 
 
 @register
