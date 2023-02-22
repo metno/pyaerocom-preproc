@@ -197,7 +197,7 @@ def data_checker(ds: xr.Dataset) -> None:
             logger.error(f"missing {var}.units")
             continue
         if units not in _units:
-            logger.error(f"{var}.{units=} not in '{_units}'")
+            logger.error(f"{var}.{units=} not in {sorted(_units)}")
 
     for var in VARIABLE_UNITS:
         if var not in ds.data_vars:

@@ -18,12 +18,12 @@ from pyaerocom_preproc.check_obs import (
 from pyaerocom_preproc.error_db import read_errors
 
 
-@pytest.fixture(params=(2020, 2022))
+@pytest.fixture(params=(2020,))
 def year(request) -> int:
     return request.param
 
 
-@pytest.fixture(params=("1D", "1H"))
+@pytest.fixture(params=("1D",))
 def freq(request) -> str:
     return request.param
 
@@ -49,27 +49,31 @@ def patched_logger(logger: loguru.Logger, monkeypatch) -> loguru.Logger:
     return logger
 
 
+@pytest.mark.parametrize("year", (2020, 2022))
+@pytest.mark.parametrize("freq", ("1D", "1H"))
 def test_monotonically_increasing(datetime_start: xr.DataArray, datetime_stop: xr.DataArray):
     for time in (datetime_start, datetime_stop):
         assert monotonically_increasing(time)
         assert not monotonically_increasing(time.roll({"time": 1}))
 
 
+@pytest.mark.parametrize("year", (2020, 2022))
+@pytest.mark.parametrize("freq", ("1D", "1H"))
 def test_infer_freq(datetime_start: xr.DataArray, datetime_stop: xr.DataArray, freq: str):
     assert infer_freq(datetime_start.diff("time")) == freq
     assert infer_freq(datetime_stop.diff("time")) == freq
     assert infer_freq(datetime_stop - datetime_start) == freq
 
 
+@pytest.mark.parametrize("year", (2020, 2022))
+@pytest.mark.parametrize("freq", ("1D", "1H"))
 def test_infer_years(datetime_start: xr.DataArray, datetime_stop: xr.DataArray, year: int):
     assert years(datetime_start) == {year}
     assert years(datetime_stop) == {year, year + 1}
 
 
 @pytest.fixture
-def good_nc(tmp_path: Path, datetime_start: xr.DataArray, datetime_stop: xr.DataArray) -> Path:
-    path = tmp_path / "good.nc"
-
+def good_ds(datetime_start: xr.DataArray, datetime_stop: xr.DataArray) -> xr.Dataset:
     def dummy(**attrs):
         return xr.DataArray(
             np.full_like(datetime_start, None, dtype=float), dims="time", attrs=attrs
@@ -89,10 +93,18 @@ def good_nc(tmp_path: Path, datetime_start: xr.DataArray, datetime_stop: xr.Data
         PM2p5_density=dummy(units="ug/m3"),
         SO2_density=dummy(units="ug/m3"),
     )
-    xr.Dataset(data).to_netcdf(
+    return xr.Dataset(data)
+
+
+@pytest.fixture
+def good_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
+    path = tmp_path / "good.nc"
+    good_ds.to_netcdf(
         path,
         encoding={
-            var: dict(_FillValue=None) for var in data if var.endswith(("_index", "_density"))
+            var: dict(_FillValue=None)
+            for var in good_ds.data_vars
+            if var.endswith(("_index", "_density"))
         },
     )
     return path
@@ -102,6 +114,51 @@ def good_nc(tmp_path: Path, datetime_start: xr.DataArray, datetime_stop: xr.Data
 def empty_nc(tmp_path_factory) -> Path:
     path: Path = tmp_path_factory.mktemp("data") / "empty.nc"
     xr.Dataset().to_netcdf(path)
+    return path
+
+
+@pytest.fixture
+def wrong_dims_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
+    path = tmp_path / "missing_units.nc"
+    ds = good_ds.expand_dims(dict(latitude=1, longitude=1))[["air_quality_index"]]
+    ds.to_netcdf(
+        path,
+        encoding={"air_quality_index": dict(_FillValue=None)},
+    )
+    return path
+
+
+@pytest.fixture
+def wrong_units_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
+    path = tmp_path / "missing_units.nc"
+    del good_ds["air_quality_index"].attrs["units"]  # missing unit
+    good_ds["CO_density"].attrs["units"] = "ug/m3"  # wrong unit
+    good_ds.to_netcdf(
+        path,
+        encoding={
+            var: dict(_FillValue=None)
+            for var in good_ds.data_vars
+            if var.endswith(("_index", "_density"))
+        },
+    )
+    return path
+
+
+@pytest.fixture
+def negative_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
+    path = tmp_path / "negative.nc"
+    vars = dict(
+        CO_density=-1,
+        NO2_density=-1,
+        O3_density=-1,
+        PM10_density=-1,
+        PM2p5_density=-1,
+        SO2_density=-1,
+    )
+    xr.full_like(good_ds.drop_vars("air_quality_index"), vars).to_netcdf(
+        path,
+        encoding={var: dict(_FillValue=None) for var in vars},
+    )
     return path
 
 
@@ -121,7 +178,6 @@ def test_time_checker_empty(empty_nc: Path, patched_logger: loguru.Logger, datab
     }
 
 
-@pytest.mark.parametrize("year,freq", ((2022, "1D"),))
 def test_coord_checker(good_nc: Path, patched_logger: loguru.Logger, database: Path):
     with patched_logger.contextualize(path=good_nc):
         coord_checker(xr.open_dataset(good_nc))
@@ -139,7 +195,6 @@ def test_coord_checker_empty(empty_nc: Path, patched_logger: loguru.Logger, data
     }
 
 
-@pytest.mark.parametrize("year,freq", ((2022, "1D"),))
 def test_data_checker(good_nc: Path, patched_logger: loguru.Logger, database: Path):
     with patched_logger.contextualize(path=good_nc):
         data_checker(xr.open_dataset(good_nc))
@@ -153,4 +208,43 @@ def test_data_checker_empty(empty_nc: Path, patched_logger: loguru.Logger, datab
 
     assert set(read_errors(empty_nc, database=database)) == {
         ("data_checker", "missing obs found"),
+    }
+
+
+def test_data_checker_wrong_dims(
+    wrong_dims_nc: Path, patched_logger: loguru.Logger, database: Path
+):
+    with patched_logger.contextualize(path=wrong_dims_nc):
+        data_checker(xr.open_dataset(wrong_dims_nc))
+
+    assert set(read_errors(wrong_dims_nc, database=database)) == {
+        ("data_checker", "air_quality_index.dims=('latitude', 'longitude', 'time') != ('time',)"),
+    }
+
+
+def test_data_checker_wrong_units(
+    wrong_units_nc: Path, patched_logger: loguru.Logger, database: Path
+):
+    with patched_logger.contextualize(path=wrong_units_nc):
+        data_checker(xr.open_dataset(wrong_units_nc))
+
+    assert set(read_errors(wrong_units_nc, database=database)) == {
+        ("data_checker", "missing air_quality_index.units"),
+        ("data_checker", "CO_density.units='ug/m3' not in ['mg m-3', 'mg/m3']"),
+    }
+
+
+def test_data_checker_negative_values(
+    negative_nc: Path, patched_logger: loguru.Logger, database: Path
+):
+    with patched_logger.contextualize(path=negative_nc):
+        data_checker(xr.open_dataset(negative_nc))
+
+    assert set(read_errors(negative_nc, database=database)) == {
+        ("data_checker", "CO_density has negative values"),
+        ("data_checker", "NO2_density has negative values"),
+        ("data_checker", "O3_density has negative values"),
+        ("data_checker", "PM10_density has negative values"),
+        ("data_checker", "PM2p5_density has negative values"),
+        ("data_checker", "SO2_density has negative values"),
     }
