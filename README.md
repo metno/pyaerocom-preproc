@@ -32,7 +32,7 @@ A good first step is to run the `check-s3` command to input your credentials. Yo
 
 After that, you may check the requirements for observation datasets by using `check-obs`. Example syntax for this looks like:
 
-```console
+```bash
 pya-pp check-obs mep-rd /path/to/data/*.nc
 ```
  Note the netCDF files in the target directory must follow the naming convention.
