@@ -126,7 +126,7 @@ def time_checker(ds: xr.Dataset) -> None:
         return
 
     if (freq := infer_freq(datetime_stop - datetime_start)) == "?":
-        logger.error(f"not hourly or daily frequency")
+        logger.error("not hourly or daily frequency")
 
     if len(years(datetime_start)) > 1:
         logger.error("different years")

@@ -27,6 +27,7 @@
         "dtype",
         "dynaconf",
         "hashlib",
+        "isel",
         "Metafunc",
         "tomli"
     ]

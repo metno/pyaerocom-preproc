@@ -18,13 +18,18 @@ def freq(request) -> str:
 def test_monotonically_increasing(datetime_start: xr.DataArray, datetime_stop: xr.DataArray):
     for time in (datetime_start, datetime_stop):
         assert monotonically_increasing(time)
-        assert not monotonically_increasing(time.roll({"time": 1}))
+        assert not monotonically_increasing(time.roll(time=1))
 
 
 def test_infer_freq(datetime_start: xr.DataArray, datetime_stop: xr.DataArray, freq: str):
     assert infer_freq(datetime_start.diff("time")) == freq
     assert infer_freq(datetime_stop.diff("time")) == freq
     assert infer_freq(datetime_stop - datetime_start) == freq
+
+
+def test_infer_freq_unknown(datetime_start: xr.DataArray, datetime_stop: xr.DataArray):
+    assert infer_freq(datetime_start - datetime_stop) == "?"
+    assert infer_freq(datetime_stop[7:] - datetime_start[:-7]) == "?"
 
 
 def test_years(datetime_start: xr.DataArray, datetime_stop: xr.DataArray, year: int):
