@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from functools import partial
 from importlib import metadata
 from pathlib import Path
 from platform import python_version
@@ -22,8 +23,8 @@ def version_callback(value: bool) -> None:  # pragma: no cover
     if not value:
         return
 
-    _package = lambda name: typer.style(name, fg=typer.colors.GREEN, bold=True)
-    _version = lambda name: typer.style(name, fg=typer.colors.CYAN, bold=True)
+    _package = partial(typer.style, fg=typer.colors.GREEN, bold=True)
+    _version = partial(typer.style, fg=typer.colors.CYAN, bold=True)
 
     def package(*names: str) -> str:
         return ", ".join(
@@ -35,7 +36,7 @@ def version_callback(value: bool) -> None:  # pragma: no cover
         dependencies (installed version for {_package("Python")} {_version(python_version())})
 
         data formats and manipulation
-        {package("xarray", "netCDF4", "numpy")}
+        {package("netCDF4", "xarray", "pandas", "numpy")}
 
         hashes / checksum
         {_package(HASHLIB) if HASHLIB.startswith("hashlib") else package(HASHLIB)}

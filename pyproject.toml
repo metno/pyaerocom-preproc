@@ -17,12 +17,16 @@ typer = "^0.7.0"
 tomli-w = "^1.0.0"
 importlib-resources = { version = "^5.10.2", python = "<3.11" }
 numpy = [
-    { version = "<1.20", python = "~3.8" },
-    { version = "^1.24.2", python = "^3.9" },
+    { version = "<1.20", python = ">=3.8,<3.10" },
+    { version = "^1.24.2", python = "^3.10" },
+]
+pandas = [
+    { version = "<1.5.3", python = ">=3.8,<3.10" },
+    { version = ">=1.5.3", python = "^3.10" },
 ]
 xarray = [
-    { version = "<2023.2", python = "~3.8" },
-    { version = ">=2023.2", python = "^3.9" },
+    { version = ">=2022.9,<2023.2", python = ">=3.8,<3.10" },
+    { version = ">=2023.2", python = "^3.10" },
 ]
 netCDF4 = "^1.6.2"
 loguru = "^0.6.0"
