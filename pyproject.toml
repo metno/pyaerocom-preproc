@@ -60,7 +60,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["pyaerocom_preproc"]
+source = ["pyaerocom_preproc", "tests"]
 omit = []
 
 [tool.coverage.report]
