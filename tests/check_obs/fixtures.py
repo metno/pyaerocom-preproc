@@ -71,7 +71,7 @@ def good_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
         path,
         encoding={
             var: dict(_FillValue=None)
-            for var in good_ds.data_vars
+            for var in good_ds.data_vars.keys()
             if var.endswith(("_index", "_density"))
         },
     )
