@@ -11,6 +11,12 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.formatting.provider": "black",
+    "files.exclude": {
+        "**/*.nc": true
+    },
+    "files.watcherExclude": {
+        "**/*.nc": true
+    },
     "cSpell.ignoreWords": [
         "addoption",
         "botocore",

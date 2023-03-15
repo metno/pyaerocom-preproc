@@ -55,6 +55,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = ["--import-mode=append"]
+filterwarnings = [
+    'ignore:numpy.* size changed:RuntimeWarning:importlib.*'
+]
 
 [tool.coverage.run]
 source = ["pyaerocom_preproc"]

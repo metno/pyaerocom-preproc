@@ -3,28 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import loguru
-import numpy as np
-import pytest
 import xarray as xr
 from pyaerocom_preproc.check_obs import coord_checker
 from pyaerocom_preproc.error_db import read_errors
-
-
-@pytest.fixture
-def wrong_coords_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
-    def dummy(value, **attrs):
-        return xr.DataArray(
-            np.full_like(good_ds["time"], value, dtype=float), dims="time", attrs=attrs
-        )
-
-    path = tmp_path / "wrong_coords.nc"
-    data = dict(
-        latitude=dummy(-100, units="degN"),  # wrong unit
-        longitude=dummy(360, units="degE"),  # wrong unit
-        altitude=dummy(0),  # missing unit
-    )
-    xr.Dataset(data).to_netcdf(path)
-    return path
 
 
 def test_coord_checker(good_nc: Path, patched_logger: loguru.Logger, database: Path):

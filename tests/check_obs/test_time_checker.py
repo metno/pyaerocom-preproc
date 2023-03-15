@@ -3,41 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import loguru
-import pytest
 import xarray as xr
 from pyaerocom_preproc.check_obs import time_checker
 from pyaerocom_preproc.error_db import read_errors
-
-
-@pytest.fixture
-def wrong_dims_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
-    path = tmp_path / "wrong_dims.nc"
-    good_ds.expand_dims(dict(latitude=1, longitude=1)).to_netcdf(path)
-    return path
-
-
-@pytest.fixture
-def bad_times_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
-    path = tmp_path / "bad_times.nc"
-    good_ds.assign(
-        datetime_start=good_ds["datetime_start"].roll(time=7),
-        datetime_stop=good_ds["datetime_stop"].roll(time=-7),
-    ).to_netcdf(path)
-    return path
-
-
-@pytest.fixture
-def wrong_years_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
-    path = tmp_path / "wrong_years.nc"
-    good_ds.assign(datetime_start=good_ds["datetime_stop"]).to_netcdf(path)
-    return path
-
-
-@pytest.fixture
-def incomplete_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
-    path = tmp_path / "incomplete.nc"
-    good_ds.isel(time=slice(None, None, 2)).to_netcdf(path)
-    return path
 
 
 def test_time_checker(good_nc: Path, patched_logger: loguru.Logger, database: Path):

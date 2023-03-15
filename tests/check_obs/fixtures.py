@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+from typing import Iterator
+
+if sys.version_info >= (3, 11):  # pragma: no cover
+    from importlib import resources
+else:  # pragma: no cover
+    import importlib_resources as resources
 
 import loguru
-import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
@@ -41,45 +47,72 @@ def patched_logger(logger: loguru.Logger, monkeypatch) -> loguru.Logger:
 
 
 @pytest.fixture
-def good_ds(datetime_start: xr.DataArray, datetime_stop: xr.DataArray) -> xr.Dataset:
-    def dummy(**attrs):
-        return xr.DataArray(
-            np.full_like(datetime_start, None, dtype=float), dims="time", attrs=attrs
-        )
-
-    data = dict(
-        datetime_start=datetime_start,
-        datetime_stop=datetime_stop,
-        latitude=xr.DataArray(0, attrs=dict(units="degree_north")),
-        longitude=xr.DataArray(0, attrs=dict(units="degree_east")),
-        altitude=xr.DataArray(0, attrs=dict(units="m")),
-        air_quality_index=dummy(units="1"),
-        CO_density=dummy(units="mg/m3"),
-        NO2_density=dummy(units="ug/m3"),
-        O3_density=dummy(units="ug/m3"),
-        PM10_density=dummy(units="ug/m3"),
-        PM2p5_density=dummy(units="ug/m3"),
-        SO2_density=dummy(units="ug/m3"),
-    )
-    return xr.Dataset(data)
+def empty_nc() -> Iterator[Path]:
+    resource = resources.files(__package__) / "empty.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
 
 
 @pytest.fixture
-def good_nc(tmp_path: Path, good_ds: xr.Dataset) -> Path:
-    path = tmp_path / "good.nc"
-    good_ds.to_netcdf(
-        path,
-        encoding={
-            var: dict(_FillValue=None)
-            for var in good_ds.data_vars.keys()
-            if var.endswith(("_index", "_density"))
-        },
-    )
-    return path
+def good_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"valid-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
 
 
-@pytest.fixture(scope="module")
-def empty_nc(tmp_path_factory) -> Path:
-    path: Path = tmp_path_factory.mktemp("data") / "empty.nc"
-    xr.Dataset().to_netcdf(path)
-    return path
+@pytest.fixture
+def wrong_coords_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"wrong_coords-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
+
+
+@pytest.fixture
+def wrong_dims_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"wrong_dims-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
+
+
+@pytest.fixture
+def wrong_units_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"wrong_units-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
+
+
+@pytest.fixture
+def negative_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"negative_density-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
+
+
+@pytest.fixture
+def bad_times_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"bad_times-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
+
+
+@pytest.fixture
+def wrong_years_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"wrong_years-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
+
+
+@pytest.fixture
+def incomplete_nc(year: int, freq: str) -> Iterator[Path]:
+    resource = resources.files(__package__) / f"incomplete-{freq}-{year}.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
