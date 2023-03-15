@@ -10,6 +10,7 @@
     "python.linting.mypyEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.formatting.provider": "black",
     "cSpell.ignoreWords": [
         "addoption",
         "botocore",
