@@ -19,7 +19,7 @@ from .error_db import logging_patcher
 main = typer.Typer(add_completion=False)
 
 
-def version_callback(value: bool) -> None:  # pragma: no cover
+def version_callback(value: bool) -> None:
     if not value:
         return
 
@@ -60,7 +60,7 @@ def logging_config(verbose: int = 0, *, quiet: bool = False, debug: bool = False
             format="<green>{extra[path].name: <40}</green> - <cyan>{function: <12}</cyan> - <level>{message}</level>",
         )
         if quiet:
-            handler.update(level="WARN")
+            handler.update(level="WARNING")
         elif verbose == 0:
             handler.update(level="INFO")
         elif verbose == 1:

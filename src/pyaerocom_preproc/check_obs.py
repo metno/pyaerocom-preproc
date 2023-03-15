@@ -76,6 +76,7 @@ def obs_report(
     for path in files:
         if not regex.match(path.name):
             logger.bind(path=path).error(f"filename does not match r'{regex.pattern}', skip")
+            upload = False
             continue
 
         if _report(path) and _check(path):
