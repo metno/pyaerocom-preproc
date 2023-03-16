@@ -6,6 +6,18 @@ authors = [
     "Alvaro Valdebenito <alvarov@met.no>",
     "Charlie Negri <charlien@met.no>",
 ]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+]
 readme = "README.md"
 packages = [{ include = "pyaerocom_preproc", from = "src" }]
 
