@@ -9,7 +9,7 @@ This command line tool requires Python 3.8 or better.
 The recommended installation method is with [`pipx`]:
 
 ``` bash
-pipx install git+ssh://git@gitlab.met.no/alvarov/pyaerocom-preproc.git
+pipx install git+ssh://git@github.com:metno/pyaerocom-preproc.git
 ```
 
 File hashes are calculated using the `blake2` algorithm found on Python's standard library, see [`hashlib`].
