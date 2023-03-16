@@ -16,7 +16,7 @@ File hashes are calculated using the `blake2` algorithm found on Python's standa
 It is also possible to install with [`blake3`] as an extra dependency for faster file hashes:
 
 ``` bash
-pipx install pyaerocom-preproc[blake3]@git+ssh://git@gitlab.met.no/alvarov/pyaerocom-preproc.git 
+pipx install pyaerocom-preproc[blake3]@git+ssh://git@github.com:metno/pyaerocom-preproc.git
 ```
 
 [`pipx`]:   https://pypa.github.io/pipx/
