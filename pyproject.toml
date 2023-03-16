@@ -110,7 +110,7 @@ ignore_missing_imports = true
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, py311, lint
+envlist = py38, py39, py310, py311, lint, build
 skip_missing_interpreters = True
 isolated_build = True
 
@@ -129,4 +129,13 @@ commands =
     pre-commit run --all-files --show-diff-on-failure
 deps =
     pre-commit
+
+[testenv:build]
+skip_install=True
+commands =
+    python -m build
+    check-wheel-contents dist/
+deps =
+    build
+    check-wheel-contents
 """
