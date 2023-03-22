@@ -96,7 +96,7 @@ def obs_report(
         year = match.group("year")
         s3_upload(path, object_name=f"{data_set}/download/{year}/{path.name}")
     
-    logger.success("Uploaded files 🚀")
+    logger.success("uploaded files 🚀")
 
 
 @register
