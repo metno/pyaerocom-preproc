@@ -116,6 +116,7 @@ def upload_obs(data_set: str, files: List[Path]):
     """
     obs_report(data_set, files, upload=True)
 
+
 @main.command()
 def bucket_ls():
     """List up to 1000 items in the S3 bucket"""

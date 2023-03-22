@@ -32,6 +32,7 @@ def s3_upload(path: Path, *, object_name: str | None = None):
     except ClientError as e:
         logger.error(f"{e}, skip")
 
+
 def s3_list():
     if (settings := config()) is None:
         raise Abort()
