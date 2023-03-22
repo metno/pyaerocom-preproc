@@ -9,14 +9,14 @@ This command line tool requires Python 3.8 or better.
 The recommended installation method is with [`pipx`]:
 
 ``` bash
-pipx install git+ssh://git@github.com:metno/pyaerocom-preproc.git
+pipx install git+ssh://git@github.com/metno/pyaerocom-preproc.git
 ```
 
 File hashes are calculated using the `blake2` algorithm found on Python's standard library, see [`hashlib`].
 It is also possible to install with [`blake3`] as an extra dependency for faster file hashes:
 
 ``` bash
-pipx install pyaerocom-preproc[blake3]@git+ssh://git@github.com:metno/pyaerocom-preproc.git
+pipx install pyaerocom-preproc[blake3]@git+ssh://git@github.com/metno/pyaerocom-preproc.git
 ```
 
 [`pipx`]:   https://pypa.github.io/pipx/
@@ -36,6 +36,12 @@ pya-pp report-obs mep-rd /path/to/data/*.nc
 ```
 
 Note the netCDF files in the target directory must follow the naming convention.
+
+Test files are provided in the `tests/check_obs` directory of the repository and can be tested with:
+
+```bash
+pya-pp report-obs valid tests/check_obs/*.nc
+```
 
 The `report-obs` command checks the files and generates a report detailing which files do not pass the checks and why. While generating the report, the error messages are collected and stored on a database. This way files with known errors do not need to be re-tested.
 The `--clear-cache` option will clear the database, allowing the files to be re-checked from scratch.
