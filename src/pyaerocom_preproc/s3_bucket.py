@@ -28,7 +28,9 @@ def s3_upload(path: Path, *, object_name: str | None = None):
     if object_name is None:
         object_name = path.name
     try:
-        s3_client(settings).upload_file(path, settings.s3_bucket.bucket_name, object_name)
+        s3_client(settings).upload_file(
+            path, settings.s3_bucket.bucket_name.strip("s3://"), object_name
+        )
     except ClientError as e:
         logger.error(f"{e}, skip")
 
