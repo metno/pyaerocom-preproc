@@ -35,6 +35,7 @@ def s3_upload(path: Path, *, object_name: str | None = None):
 def s3_list():
     if (settings := config()) is None:
         raise Abort()
-    objects = s3_client(settings).list_objects_v2(Bucket=settings.s3_bucket.bucket_name)
+    hostname = settings.s3_bucket.bucket_name.strip("s3://")
+    objects = s3_client(settings).list_objects_v2(Bucket=hostname)
     for obj in objects["Contents"]:
         print(obj["Key"])
