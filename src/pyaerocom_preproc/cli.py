@@ -15,6 +15,7 @@ from .check_obs import obs_report
 from .checksum import HASHLIB
 from .config import config
 from .error_db import logging_patcher
+from .s3_bucket import s3_list
 
 main = typer.Typer(add_completion=False)
 
@@ -114,3 +115,8 @@ def upload_obs(data_set: str, files: List[Path]):
     Files without known errors will be re-tested
     """
     obs_report(data_set, files, upload=True)
+
+@main.command()
+def bucket_ls():
+    """List up to 1000 items in the S3 bucket"""
+    s3_list()

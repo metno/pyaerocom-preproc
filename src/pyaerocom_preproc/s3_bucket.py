@@ -31,3 +31,10 @@ def s3_upload(path: Path, *, object_name: str | None = None):
         s3_client(settings).upload_file(path, settings.s3_bucket.bucket_name, object_name)
     except ClientError as e:
         logger.error(f"{e}, skip")
+
+def s3_list():
+    if (settings := config()) is None:
+        raise Abort()
+    objects = s3_client(settings).list_objects_v2(Bucket=settings.s3_bucket.bucket_name)
+    for obj in objects["Contents"]:
+        print(obj["Key"])
