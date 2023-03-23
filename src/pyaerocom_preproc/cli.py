@@ -92,8 +92,11 @@ def callback(
 
 @main.command(help=config.__doc__)
 def check_s3(overwrite: bool = typer.Option(False, "--overwrite", "-O")):
-    if config(overwrite=overwrite) is None:
+    settings = config(overwrite=overwrite)
+    if settings is None:
         raise typer.Abort()
+    if "s3://" in settings.s3_bucket.bucket_name:
+        typer.echo("bucket_name contains 's3://'. overwrite S3 credentials file")
 
 
 @main.command()
