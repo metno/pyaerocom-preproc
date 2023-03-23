@@ -52,6 +52,8 @@ def config(
         }
         secrets.parent.mkdir(True, exist_ok=True)
         secrets.parent.chmod(0o700)  # only user has read/write/execute permissions
+        if _secrets["bucket_name"].startswith("s3://"):
+            _secrets["bucket_name"] = _secrets["bucket_name"].replace("s3://", "")
         secrets.write_text(tomli_w.dumps({"s3_bucket": _secrets}))
         secrets.chmod(0o600)  # only user has read/write permissions
 
