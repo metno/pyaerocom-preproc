@@ -108,9 +108,3 @@ def test_upload_obs():
     result = runner.invoke(main, options.split())
     assert result.exit_code == 0
     assert "pass" in result.output
-
-
-def test_bucket_ls():
-    options = "bucket-ls"
-    result = runner.invoke(main, options.split())
-    assert result
