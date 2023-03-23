@@ -16,7 +16,8 @@ def secrets(tmp_path: Path, monkeypatch) -> Path:
 @pytest.fixture
 def secrets_s3_bucket(tmp_path: Path, monkeypatch) -> Path:
     path = tmp_path / "secrets.toml"
-    def fake_getpass(prompt:str)->str:
+
+    def fake_getpass(prompt: str) -> str:
         if prompt.startswith("bucket_name"):
             return "s3://s3_bucket_name"
         return prompt.split(":")[0]
@@ -40,7 +41,6 @@ def settings(secrets: Path) -> Dynaconf:
     return _settings(secrets=secrets)
 
 
-
 def test_settings(settings: Dynaconf):
     settings.validators.validate("s3_bucket")
     assert settings.s3_bucket.bucket_name == "name"
@@ -49,7 +49,7 @@ def test_settings(settings: Dynaconf):
     assert settings.s3_bucket.endpoint_url == "https://rgw.met.no"
 
 
-def test_settings_s3_bucket(secrets_s3_bucket:Path):
+def test_settings_s3_bucket(secrets_s3_bucket: Path):
     settings = config(secrets=secrets_s3_bucket)
     settings.validators.validate("s3_bucket")
     assert settings.s3_bucket.bucket_name == "s3_bucket_name"
