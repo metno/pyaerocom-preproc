@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyaerocom-preproc"
-version = "0.2.0"
+version = "0.3.0"
 description = "Check and upload observations and model data for PyAerocom usage"
 authors = [
     "Alvaro Valdebenito <alvarov@met.no>",
@@ -67,9 +67,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = ["--import-mode=append"]
-filterwarnings = [
-    'ignore:numpy.* size changed:RuntimeWarning:importlib.*'
-]
+filterwarnings = ['ignore:numpy.* size changed:RuntimeWarning:importlib.*']
 
 [tool.coverage.run]
 source = ["pyaerocom_preproc", "tests"]
