@@ -51,6 +51,7 @@ def test_settings(settings: Dynaconf):
 
 def test_settings_s3_bucket(secrets_s3_bucket: Path):
     settings = config(secrets=secrets_s3_bucket)
+    assert settings is not None
     assert settings.s3_bucket.bucket_name == "s3_bucket_name"
     assert settings.s3_bucket.access_key_id == "access_key_id"
     assert settings.s3_bucket.secret_access_key == "secret_access_key"
