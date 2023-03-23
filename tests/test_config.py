@@ -9,7 +9,7 @@ from pyaerocom_preproc.config import _settings, config
 @pytest.fixture
 def secrets(tmp_path: Path, monkeypatch) -> Path:
     path = tmp_path / "secrets.toml"
-    monkeypatch.setattr("pyaerocom_preproc.config.getpass", lambda prompt: prompt.split(":")[0])
+    monkeypatch.setattr("builtins.input", lambda prompt: prompt.split(":")[0])
     return path
 
 
@@ -22,7 +22,7 @@ def secrets_s3_bucket(tmp_path: Path, monkeypatch) -> Path:
             return "s3://s3_bucket_name"
         return prompt.split(":")[0]
 
-    monkeypatch.setattr("pyaerocom_preproc.config.getpass", fake_getpass)
+    monkeypatch.setattr("builtins.input", fake_getpass)
     return path
 
 

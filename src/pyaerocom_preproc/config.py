@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import sys
 from functools import lru_cache
-from getpass import getpass
 from pathlib import Path
 
 if sys.version_info >= (3, 11):  # pragma: no cover
@@ -47,8 +46,7 @@ def config(
     """Check S3 credentials file"""
     if not secrets.exists() or overwrite:
         _secrets = {
-            key: getpass(f"{key}: ")
-            for key in ("bucket_name", "access_key_id", "secret_access_key")
+            key: input(f"{key}: ") for key in ("bucket_name", "access_key_id", "secret_access_key")
         }
         secrets.parent.mkdir(True, exist_ok=True)
         secrets.parent.chmod(0o700)  # only user has read/write/execute permissions
