@@ -43,7 +43,7 @@ Test files are provided in the `tests/check_obs` directory of the repository and
 pya-pp report-obs valid tests/check_obs/*.nc
 ```
 
-The `report-obs` command checks the files and generates a report detailing which files do not pass the checks and why. While generating the report, the error messages are collected and stored on a database. This way files with known errors do not need to be re-tested.
+The `report-obs` command checks the files and generates a report detailing which files do not pass the checks and the reason why. While generating the report, the error messages are collected and stored in a database. This means files with known errors do not need to be re-tested.
 The `--clear-cache` option will clear the database, allowing the files to be re-checked from scratch.
 
-The `upload-obs` command will upload files which have previous checks to the servers at MET Norway. It is strongly recommended that this is run only after all checks have passed to ensure all your data is uploaded.
+The `upload-obs` command will upload files which have passed previous checks to the servers at MET Norway. It is strongly recommended that this is run only after all checks have passed to ensure all your data is uploaded.
