@@ -142,9 +142,10 @@ def monotonically_increasing(time: xr.DataArray) -> bool:
 
 
 def infer_freq(time_delta: xr.DataArray) -> Literal["1H", "1D", "?"]:
-    if np.unique(time_delta.dt.seconds) == [3600]:
+    time_delta = time_delta.dt.round("min")
+    if (time_delta.dt.seconds == 3600).all():
         return "1H"
-    if np.unique(time_delta.dt.days) == [1]:
+    if (time_delta.dt.days == 1).all():
         return "1D"
     return "?"
 
