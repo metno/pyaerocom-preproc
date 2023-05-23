@@ -61,3 +61,12 @@ def test_negative_values(negative_nc: Path, patched_logger: loguru.Logger, datab
         ("data_checker", "PM2p5_density has negative values"),
         ("data_checker", "SO2_density has negative values"),
     }
+
+
+def test_icos_co2_nrt(icos_co2_nrt: Path, patched_logger: loguru.Logger, database: Path):
+    with patched_logger.contextualize(path=icos_co2_nrt):
+        data_checker(xr.open_dataset(icos_co2_nrt))
+
+    assert set(read_errors(icos_co2_nrt, database=database)) == {
+        ("data_checker", "missing obs found"),
+    }

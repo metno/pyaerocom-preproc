@@ -62,3 +62,12 @@ def test_incomplete(incomplete_nc: Path, patched_logger: loguru.Logger, database
     assert set(read_errors(incomplete_nc, database=database)) == {
         ("time_checker", "not a full year"),
     }
+
+
+def test_icos_co2_nrt(icos_co2_nrt: Path, patched_logger: loguru.Logger, database: Path):
+    with patched_logger.contextualize(path=icos_co2_nrt):
+        time_checker(xr.open_dataset(icos_co2_nrt))
+
+    assert set(read_errors(icos_co2_nrt, database=database)) == {
+        ("time_checker", "not a full year"),
+    }

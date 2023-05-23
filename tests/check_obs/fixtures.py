@@ -116,3 +116,11 @@ def incomplete_nc(year: int, freq: str) -> Iterator[Path]:
     assert resource.is_file()
     with resources.as_file(resource) as path:
         yield path
+
+
+@pytest.fixture
+def icos_co2_nrt() -> Iterator[Path]:
+    resource = resources.files(__package__) / f"icos-co2-nrt-bir-10.0m-20230401-20230403T100446.nc"
+    assert resource.is_file()
+    with resources.as_file(resource) as path:
+        yield path
