@@ -39,3 +39,10 @@ def test_wrong_coords(wrong_coords_nc: Path, patched_logger: loguru.Logger, data
         ("coord_checker", "latitude out of range [-90, 90]"),
         ("coord_checker", "longitude out of range [-180, 180]"),
     }
+
+
+def test_icos_co2_nrt(icos_co2_nrt: Path, patched_logger: loguru.Logger, database: Path):
+    with patched_logger.contextualize(path=icos_co2_nrt):
+        coord_checker(xr.open_dataset(icos_co2_nrt))
+
+    assert set(read_errors(icos_co2_nrt, database=database)) == set()
